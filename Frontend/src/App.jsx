@@ -16,6 +16,7 @@ import SelectRole from './pages/Select_Role';
 import GovernmentRegistration from './pages/Goverment_USer';
 import IndustryRegistration from './pages/Industry_User';
 import Settings from './pages/setting';
+import Profile from './pages/profile';
 function App() {
   return (
     <>
@@ -33,6 +34,7 @@ function App() {
         <Route path="/Login" element={<Login />} />
         <Route path="/selectrole" element={<SelectRole />} />
          <Route path="/settings" element={<Settings />} />
+         <Route path="/profile" element={<Profile />} />
         <Route
           path="/GovernmentRegistration"
           element={<GovernmentRegistration />}

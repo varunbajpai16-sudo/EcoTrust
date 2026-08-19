@@ -480,6 +480,7 @@ function AlertCard({ alert }) {
 }
 
 export default function Alerts() {
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
   const isDark = theme === 'dark';
@@ -551,10 +552,9 @@ export default function Alerts() {
             </button>
 
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
+              <div onClick={()=>navigate("/profile")} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
                 VB
               </div>
-
               <div className="hidden sm:block">
                 <p className="text-xs font-semibold">Admin</p>
 

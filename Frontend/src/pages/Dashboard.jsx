@@ -20,7 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -158,13 +158,13 @@ const alerts = [
 ];
 
 function Sidebar({ open, setOpen }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const items = [
     {
       name: 'Overview',
       icon: LayoutDashboard,
       path: '/dashboard',
-      active:true
+      active: true,
     },
     {
       name: 'Live Monitoring',
@@ -220,7 +220,10 @@ function Sidebar({ open, setOpen }) {
         {/* Logo */}
         <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/10 px-6">
           <div className="flex items-center gap-3">
-         <div onClick={()=>navigate("/")} className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0B6B50] hover:cursor-pointer">
+            <div
+              onClick={() => navigate('/')}
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0B6B50] hover:cursor-pointer"
+            >
               <Leaf size={22} />
             </div>
 
@@ -251,7 +254,7 @@ function Sidebar({ open, setOpen }) {
               return (
                 <button
                   key={item.name}
-                  onClick={()=>navigate(item.path)}
+                  onClick={() => navigate(item.path)}
                   className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition ${
                     item.active
                       ? 'bg-[#0B6B50] text-white shadow-lg shadow-black/10'
@@ -276,7 +279,10 @@ function Sidebar({ open, setOpen }) {
             System
           </p>
 
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/55 hover:bg-white/5 hover:text-white">
+          <button
+            onClick={() => navigate('/settings')}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/55 hover:bg-white/5 hover:text-white"
+          >
             <Settings size={18} />
             Settings
           </button>
@@ -317,7 +323,9 @@ function StatCard({ data }) {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] transition-colors duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-[#0B241D]">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{data.title}</p>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {data.title}
+          </p>
 
           <h3 className="mt-2 text-2xl font-bold tracking-tight text-[#0F172A] dark:text-white">
             {data.value}
@@ -499,6 +507,7 @@ function EmissionCard({ item }) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
   const isDark = theme === 'dark';
@@ -556,7 +565,7 @@ export default function Dashboard() {
 
             {/* User */}
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
+              <div onClick={()=>navigate("/profile")} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
                 VB
               </div>
 
@@ -581,7 +590,9 @@ export default function Dashboard() {
           {/* Welcome */}
           <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Good morning, Admin 👋</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Good morning, Admin 👋
+              </p>
 
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-[#0F172A] dark:text-white">
                 Environmental Overview
@@ -622,7 +633,9 @@ export default function Dashboard() {
 
               <div className="flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[10px] dark:border-white/10 dark:bg-white/5">
-                  <span className="font-medium text-slate-500 dark:text-slate-400">Status</span>
+                  <span className="font-medium text-slate-500 dark:text-slate-400">
+                    Status
+                  </span>
                   <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />{' '}
                     Normal
@@ -904,9 +917,13 @@ export default function Dashboard() {
                 <div
                   key={label}
                   className={`flex items-center gap-3 p-4 ${
-                    index < 3 ? 'border-r border-slate-100 dark:border-white/10' : ''
+                    index < 3
+                      ? 'border-r border-slate-100 dark:border-white/10'
+                      : ''
                   } ${index === 1 ? 'border-t border-slate-100 dark:border-white/10 sm:border-t-0' : ''} ${
-                    index === 2 ? 'border-t border-slate-100 dark:border-white/10 sm:border-t-0' : ''
+                    index === 2
+                      ? 'border-t border-slate-100 dark:border-white/10 sm:border-t-0'
+                      : ''
                   }`}
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-500 dark:bg-white/5 dark:text-slate-400">
@@ -941,7 +958,9 @@ export default function Dashboard() {
               </div>
 
               <div className="mt-4 flex items-end gap-3">
-                <span className="text-3xl font-bold text-[#0F172A] dark:text-white">98.7%</span>
+                <span className="text-3xl font-bold text-[#0F172A] dark:text-white">
+                  98.7%
+                </span>
                 <span className="mb-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-600">
                   +2.4%
                 </span>
@@ -974,30 +993,85 @@ export default function Dashboard() {
           </section>
 
           {/* Live Environmental Readings */}
-          <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
+          <section
+            className="
+    mt-5
+    rounded-2xl
+    border border-slate-200
+    bg-white
+    p-5
+    shadow-[0_4px_20px_rgba(15,23,42,0.03)]
+    transition-colors duration-300
+
+    dark:border-white/10
+    dark:bg-white/[0.03]
+    dark:shadow-none
+  "
+          >
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
                     Live Environmental Readings
                   </h3>
-                  <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-600">
+
+                  <span
+                    className="
+            flex items-center gap-1
+            rounded-full
+            bg-emerald-50
+            px-2 py-1
+            text-[9px]
+            font-semibold
+            text-emerald-600
+
+            dark:bg-emerald-500/10
+            dark:text-emerald-400
+          "
+                  >
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                     LIVE
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+
+                <p className="mt-1 text-[11px] text-slate-400 dark:text-white/35">
                   Real-time readings from connected CEMS and environmental
                   sensors
                 </p>
               </div>
 
-              <button className="flex items-center gap-2 self-start rounded-lg border border-slate-200 px-3 py-2 text-[10px] font-medium text-slate-500 hover:bg-slate-50">
+              {/* Location Filter */}
+
+              <button
+                className="
+        flex items-center gap-2
+        self-start
+        rounded-lg
+        border border-slate-200
+        bg-white
+        px-3 py-2
+        text-[10px]
+        font-medium
+        text-slate-500
+        transition
+
+        hover:bg-slate-50
+        hover:text-[#0B6B50]
+
+        dark:border-white/10
+        dark:bg-white/[0.03]
+        dark:text-white/50
+        dark:hover:bg-white/10
+        dark:hover:text-emerald-400
+      "
+              >
                 <MapPin size={12} />
                 All locations
                 <ChevronDown size={12} />
               </button>
             </div>
+
+            {/* Emission Cards */}
 
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {emissions.map((item) => (

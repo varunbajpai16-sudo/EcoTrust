@@ -377,6 +377,7 @@ function ParameterCard({ parameter }) {
 }
 
 export default function Analytics() {
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
   const isDark = theme === 'dark';
@@ -435,7 +436,7 @@ export default function Analytics() {
             </button>
 
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
+             <div onClick={()=>navigate("/profile")} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
                 VB
               </div>
 
