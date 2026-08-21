@@ -1,51 +1,72 @@
 import {
   Bell,
-  Building2,
   CheckCircle2,
   ChevronDown,
   Edit3,
   Factory,
   FileText,
+  Gauge,
   KeyRound,
+  LayoutDashboard,
   Leaf,
   Lock,
-  LogOut,
   Mail,
   MapPin,
   Menu,
   Moon,
   Phone,
-  ShieldCheck,
+  Radio,
+  Save,
   Settings,
+  ShieldCheck,
   Sun,
   User,
   X,
-  LayoutDashboard,
-  Radio,
-  LineChart,
-  Gauge
-} from "lucide-react";
+} from 'lucide-react';
 
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-
-import { useDispatch, useSelector } from "react-redux";
-import { toggleTheme } from "../features/Theme/Theme_slice";
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toggleTheme } from '../features/Theme/Theme_slice';
 
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
+// ============================================================
+// THEME TOGGLE
+// ============================================================
+
+function ThemeToggle() {
+  const dispatch = useDispatch();
+  const theme = useSelector((state) => state.theme.theme);
+
+  const isDark = theme === 'dark';
+
+  return (
+    <button
+      type="button"
+      onClick={() => dispatch(toggleTheme())}
+      aria-label={
+        isDark ? 'Switch to light mode' : 'Switch to dark mode'
+      }
+      className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
+    >
+      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  );
+}
+
+
+// ============================================================
+// SIDEBAR
+// ============================================================
 
 function Sidebar({ open, setOpen }) {
   const navigate = useNavigate();
 
-    const items = [
+  const items = [
     {
       name: 'Overview',
       icon: LayoutDashboard,
       path: '/dashboard',
-      active: true,
     },
     {
       name: 'Live Monitoring',
@@ -55,8 +76,8 @@ function Sidebar({ open, setOpen }) {
     {
       name: 'Alerts',
       icon: Bell,
-      badge: '12',
       path: '/alerts',
+      badge: '12',
     },
     {
       name: 'Compliance',
@@ -65,7 +86,7 @@ function Sidebar({ open, setOpen }) {
     },
     {
       name: 'Reports',
-      icon: LineChart,
+      icon: FileText,
       path: '/reports',
     },
     {
@@ -82,6 +103,7 @@ function Sidebar({ open, setOpen }) {
 
   return (
     <>
+      {/* Mobile Overlay */}
       {open && (
         <div
           className="fixed inset-0 z-40 bg-black/40 lg:hidden"
@@ -89,33 +111,19 @@ function Sidebar({ open, setOpen }) {
         />
       )}
 
+      {/* Sidebar */}
       <aside
-        className={`
-          fixed left-0 top-0 z-50
-          flex h-screen w-[250px]
-          flex-col
-          bg-[#052E24]
-          text-white
-          transition-transform duration-300
-          ${open ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0
-        `}
+        className={`fixed left-0 top-0 z-50 flex h-screen w-[250px] flex-col bg-[#052E24] text-white transition-transform duration-300 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0`}
       >
         {/* Logo */}
-
         <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/10 px-6">
-          <div className="flex items-center gap-3">
-
-            <div
-              onClick={() => navigate("/")}
-              className="
-                flex h-10 w-10
-                cursor-pointer
-                items-center justify-center
-                rounded-xl
-                bg-[#0B6B50]
-              "
-            >
+          <div
+            onClick={() => navigate('/')}
+            className="flex cursor-pointer items-center gap-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0B6B50]">
               <Leaf size={22} />
             </div>
 
@@ -128,7 +136,6 @@ function Sidebar({ open, setOpen }) {
                 ENVIRONMENTAL INTELLIGENCE
               </div>
             </div>
-
           </div>
 
           <button
@@ -139,17 +146,13 @@ function Sidebar({ open, setOpen }) {
           </button>
         </div>
 
-
         {/* Navigation */}
-
         <div className="flex-1 overflow-y-auto px-4 py-6">
-
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/30">
             Workspace
           </p>
 
           <nav className="space-y-1">
-
             {items.map((item) => {
               const Icon = item.icon;
 
@@ -157,17 +160,11 @@ function Sidebar({ open, setOpen }) {
                 <button
                   key={item.name}
                   onClick={() => navigate(item.path)}
-                  className="
-                    flex w-full
-                    items-center gap-3
-                    rounded-xl
-                    px-3 py-3
-                    text-sm
-                    text-white/55
-                    transition
-                    hover:bg-white/5
-                    hover:text-white
-                  "
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition ${
+                    item.path === '/profile'
+                      ? 'bg-[#0B6B50] text-white'
+                      : 'text-white/55 hover:bg-white/5 hover:text-white'
+                  }`}
                 >
                   <Icon size={18} />
 
@@ -183,1081 +180,638 @@ function Sidebar({ open, setOpen }) {
                 </button>
               );
             })}
-
           </nav>
 
-
+          {/* System */}
           <p className="mb-3 mt-8 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/30">
             System
           </p>
 
-
           <button
-            onClick={() => navigate("/settings")}
-            className="
-              flex w-full
-              items-center gap-3
-              rounded-xl
-              px-3 py-3
-              text-sm
-              text-white/55
-              transition
-              hover:bg-white/5
-              hover:text-white
-            "
+            onClick={() => navigate('/settings')}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/55 transition hover:bg-white/5 hover:text-white"
           >
             <Settings size={18} />
-            Settings
+
+            <span className="flex-1 text-left">
+              Settings
+            </span>
           </button>
 
+          {/* Current Profile */}
+          <button
+            onClick={() => navigate('/profile')}
+            className="mt-1 flex w-full items-center gap-3 rounded-xl bg-[#0B6B50] px-3 py-3 text-sm text-white"
+          >
+            <User size={18} />
+
+            <span className="flex-1 text-left">
+              My Profile
+            </span>
+          </button>
         </div>
 
-
-        {/* Sidebar bottom */}
-
+        {/* System Status */}
         <div className="shrink-0 border-t border-white/10 p-4">
-
           <div className="rounded-xl bg-white/5 p-4">
-
             <div className="flex items-center gap-2">
-
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
 
               <span className="text-xs font-medium">
-                System active
+                All systems operational
               </span>
-
             </div>
 
             <p className="mt-2 text-[10px] text-white/40">
-              EcoTrust monitoring services running
+              Last synchronized 12 sec ago
             </p>
-
           </div>
-
         </div>
-
       </aside>
     </>
   );
 }
 
 
-/* =========================================================
-   INFO ITEM
-========================================================= */
+// ============================================================
+// INFO FIELD
+// ============================================================
 
-function InfoItem({
-  icon: Icon,
+function InfoField({
   label,
   value,
+  icon: Icon,
 }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="flex items-center gap-2">
+        <Icon
+          size={14}
+          className="text-[#0B6B50] dark:text-emerald-400"
+        />
 
-      <div
-        className="
-          flex h-9 w-9
-          shrink-0
-          items-center justify-center
-          rounded-lg
-          bg-slate-50
-          text-slate-500
-
-          dark:bg-white/[0.05]
-          dark:text-white/40
-        "
-      >
-        <Icon size={16} />
-      </div>
-
-      <div className="min-w-0">
-
-        <p className="text-[9px] font-medium uppercase tracking-wide text-slate-400 dark:text-white/25">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           {label}
         </p>
-
-        <p className="mt-1 truncate text-xs font-semibold text-slate-700 dark:text-white/75">
-          {value}
-        </p>
-
       </div>
 
+      <p className="mt-2 text-sm font-semibold text-slate-800 dark:text-white">
+        {value}
+      </p>
     </div>
   );
 }
 
 
-/* =========================================================
-   PROFILE
-========================================================= */
+// ============================================================
+// STAT CARD
+// ============================================================
 
-export default function Profile() {
+function StatCard({
+  value,
+  label,
+  icon: Icon,
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-[#0B241D]">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#0B6B50] dark:bg-emerald-400/10 dark:text-emerald-300">
+          <Icon size={18} />
+        </div>
 
-  const [sidebarOpen, setSidebarOpen] =
-    useState(false);
+        <div>
+          <p className="text-lg font-bold text-slate-900 dark:text-white">
+            {value}
+          </p>
 
-  const dispatch = useDispatch();
+          <p className="text-[9px] text-slate-400">
+            {label}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+
+// ============================================================
+// ACTIVITY DATA
+// ============================================================
+
+const activity = [
+  {
+    icon: ShieldCheck,
+    title: 'Compliance review completed',
+    description: 'Plant A · Delhi NCR',
+    time: '12 min ago',
+  },
+  {
+    icon: Bell,
+    title: 'Alert acknowledged',
+    description: 'High PM2.5 · Plant C',
+    time: '34 min ago',
+  },
+  {
+    icon: FileText,
+    title: 'Monthly report generated',
+    description: 'Environmental compliance report',
+    time: '2 hours ago',
+  },
+  {
+    icon: Factory,
+    title: 'Factory monitoring updated',
+    description: 'Plant B · Uttar Pradesh',
+    time: '5 hours ago',
+  },
+];
+
+
+// ============================================================
+// ADMIN PROFILE
+// ============================================================
+
+export default function AdminProfile() {
   const navigate = useNavigate();
-
-
-  /* =======================================================
-     THEME
-  ======================================================= */
+  const dispatch = useDispatch();
 
   const theme = useSelector(
     (state) => state.theme.theme
   );
 
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
 
+  const [editing, setEditing] =
+    useState(false);
+
+  const [profile, setProfile] = useState({
+    name: 'Varun Bajpai',
+    email: 'admin@ecotrust.gov.in',
+    phone: '+91 98765 43210',
+    department:
+      'Environmental Monitoring Department',
+    role: 'Environmental Officer',
+    jurisdiction: 'Uttar Pradesh',
+  });
+
+  // Theme
   useEffect(() => {
+    document.documentElement.classList.toggle(
+      'dark',
+      isDark
+    );
+  }, [isDark]);
 
-    const root =
-      document.documentElement;
+  // Handle profile changes
+  const handleChange = (
+    field,
+    value
+  ) => {
+    setProfile((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-
-  }, [theme]);
-
+  // Toggle editing
+  const handleEdit = () => {
+    setEditing((prev) => !prev);
+  };
 
   return (
-    <div
-      className="
-        min-h-screen
-        bg-[#F7FAF8]
-        font-[Inter,sans-serif]
-        text-[#0F172A]
-        transition-colors duration-300
+    <div className="min-h-screen bg-[#F7FAF8] font-[Inter,sans-serif] text-[#0F172A] transition-colors duration-300 dark:bg-[#071A15] dark:text-white">
 
-        dark:bg-[#071A15]
-        dark:text-white
-      "
-    >
-
-      {/* ===================================================
+      {/* ======================================================
           SIDEBAR
-      =================================================== */}
+      ====================================================== */}
 
       <Sidebar
         open={sidebarOpen}
         setOpen={setSidebarOpen}
       />
 
+      {/* ======================================================
+          MAIN CONTENT
+      ====================================================== */}
 
       <div className="min-w-0 lg:ml-[250px]">
 
-
-        {/* =================================================
+        {/* ====================================================
             HEADER
-        ================================================= */}
+        ==================================================== */}
 
-        <header
-          className="
-            sticky top-0 z-30
-            flex h-[76px]
-            items-center justify-between
-            border-b border-slate-200
-            bg-white/90
-            px-5
-            backdrop-blur-xl
-            transition-colors duration-300
-
-            dark:border-white/10
-            dark:bg-[#071A15]/90
-
-            lg:px-8
-          "
-        >
+        <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white/90 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-[#071A15]/90 lg:px-8">
 
           <div className="flex items-center gap-4">
 
+            {/* Mobile Menu */}
             <button
               onClick={() =>
                 setSidebarOpen(true)
               }
-              className="
-                rounded-lg
-                p-2
-
-                hover:bg-slate-100
-                dark:hover:bg-white/5
-
-                lg:hidden
-              "
+              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5 lg:hidden"
             >
               <Menu size={21} />
             </button>
 
-
             <div>
-
               <h1 className="text-lg font-bold text-[#0F172A] dark:text-white">
-                Profile
+                Admin Profile
               </h1>
 
-              <p className="hidden text-[10px] text-slate-400 dark:text-white/35 sm:block">
-                Manage your EcoTrust account and organization details
+              <p className="hidden text-[10px] text-slate-400 dark:text-slate-500 sm:block">
+                Manage your EcoTrust account
               </p>
-
             </div>
-
           </div>
 
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
 
             {/* Theme */}
+            <ThemeToggle />
 
-            <button
-              onClick={() =>
-                dispatch(toggleTheme())
-              }
-              className="
-                flex h-9 w-9
-                items-center justify-center
-                rounded-lg
-                border border-slate-200
-                bg-white
-                text-slate-500
-                transition
-
-                hover:bg-emerald-50
-                hover:text-[#0B6B50]
-
-                dark:border-white/10
-                dark:bg-white/5
-                dark:text-white/60
-                dark:hover:bg-white/10
-                dark:hover:text-emerald-400
-              "
-            >
-              {isDark ? (
-                <Sun size={17} />
-              ) : (
-                <Moon size={17} />
-              )}
-            </button>
-
-
-            {/* Notification */}
-
-            <button
-              className="
-                relative
-                flex h-9 w-9
-                items-center justify-center
-                rounded-lg
-                border border-slate-200
-                bg-white
-                text-slate-500
-
-                dark:border-white/10
-                dark:bg-white/5
-                dark:text-white/60
-              "
-            >
+            {/* Notifications */}
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:bg-[#0B241D] dark:text-slate-300">
               <Bell size={17} />
 
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-red-500 dark:border-[#071A15]" />
             </button>
 
-
-            {/* User */}
-
+            {/* Back */}
             <button
               onClick={() =>
-                navigate("/profile")
+                navigate('/dashboard')
               }
-              className="flex items-center gap-2"
+              className="hidden text-xs font-semibold text-[#0B6B50] hover:underline sm:block dark:text-emerald-400"
             >
-
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
-                VB
-              </div>
-
-              <div className="hidden text-left sm:block">
-
-                <p className="text-xs font-semibold text-slate-700 dark:text-white/80">
-                  Admin
-                </p>
-
-                <p className="text-[9px] text-slate-400 dark:text-white/35">
-                  Environmental Officer
-                </p>
-
-              </div>
-
-              <ChevronDown
-                size={14}
-                className="hidden text-slate-400 dark:text-white/35 sm:block"
-              />
-
+              Back to Dashboard
             </button>
-
           </div>
-
         </header>
 
 
-        {/* =================================================
+        {/* ====================================================
             MAIN
-        ================================================= */}
+        ==================================================== */}
 
-        <main className="mx-auto max-w-[1450px] p-5 lg:p-8">
-
-
-          {/* =================================================
-              PAGE INTRO
-          ================================================= */}
-
-          <div className="mb-7">
-
-            <span
-              className="
-                inline-flex
-                items-center gap-1.5
-                rounded-full
-                bg-emerald-50
-                px-2.5 py-1
-                text-[9px]
-                font-bold
-                text-emerald-600
-
-                dark:bg-emerald-500/10
-                dark:text-emerald-400
-              "
-            >
-              <User size={11} />
-              ACCOUNT PROFILE
-            </span>
+        <main className="mx-auto max-w-[1250px] p-5 lg:p-8">
 
 
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-[#0F172A] dark:text-white">
-              Your Profile
-            </h2>
-
-
-            <p className="mt-1 text-sm text-slate-500 dark:text-white/45">
-              Manage your personal information, organization access
-              and account security.
-            </p>
-
-          </div>
-
-
-          {/* =================================================
+          {/* ==================================================
               PROFILE HERO
-          ================================================= */}
+          ================================================== */}
 
-          <section
-            className="
-              overflow-hidden
-              rounded-2xl
-              border border-slate-200
-              bg-white
-              shadow-[0_4px_20px_rgba(15,23,42,0.03)]
-              transition-colors
+          <section className="relative overflow-hidden rounded-2xl bg-[#052E24] p-6 text-white shadow-lg lg:p-8">
 
-              dark:border-white/10
-              dark:bg-white/[0.03]
-              dark:shadow-none
-            "
-          >
+            {/* Background Glow */}
+            <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl" />
 
-            {/* Green banner */}
+            <div className="absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl" />
 
-            <div
-              className="
-                h-28
-                bg-gradient-to-r
-                from-[#064E3B]
-                via-[#0B6B50]
-                to-[#0F8A68]
+            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
 
-                dark:from-[#06382D]
-                dark:via-[#07503D]
-                dark:to-[#08634B]
-              "
-            />
+              {/* User */}
+              <div className="flex items-center gap-5">
 
+                {/* Avatar */}
+                <div className="relative">
 
-            <div className="px-5 pb-6 lg:px-7">
-
-              <div className="-mt-12 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-
-                <div className="flex items-end gap-4">
-
-                  {/* Avatar */}
-
-                  <div
-                    className="
-                      flex h-24 w-24
-                      shrink-0
-                      items-center justify-center
-                      rounded-2xl
-                      border-4
-                      border-white
-                      bg-[#0B6B50]
-                      text-2xl
-                      font-bold
-                      text-white
-                      shadow-xl
-
-                      dark:border-[#071A15]
-                    "
-                  >
+                  <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-[#0B6B50] text-2xl font-bold shadow-lg">
                     VB
                   </div>
 
-
-                  <div className="pb-1">
-
-                    <h3 className="text-xl font-bold text-[#0F172A] dark:text-white">
-                      Varun Bajpai
-                    </h3>
-
-                    <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
-                      Environmental Officer
-                    </p>
-
-                  </div>
+                  {/* Online */}
+                  <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full border-2 border-[#052E24] bg-emerald-400" />
 
                 </div>
 
-
-                <button
-                  className="
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-lg
-                    bg-[#0B6B50]
-                    px-4 py-2.5
-                    text-xs
-                    font-semibold
-                    text-white
-                    transition
-                    hover:bg-[#064E3B]
-                  "
-                >
-                  <Edit3 size={14} />
-                  Edit Profile
-                </button>
-
-              </div>
-
-
-              {/* Status */}
-
-              <div className="mt-5 flex flex-wrap gap-2">
-
-                <span
-                  className="
-                    flex items-center gap-1.5
-                    rounded-full
-                    bg-emerald-50
-                    px-3 py-1.5
-                    text-[9px]
-                    font-semibold
-                    text-emerald-600
-
-                    dark:bg-emerald-500/10
-                    dark:text-emerald-400
-                  "
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Account Active
-                </span>
-
-
-                <span
-                  className="
-                    rounded-full
-                    bg-blue-50
-                    px-3 py-1.5
-                    text-[9px]
-                    font-semibold
-                    text-blue-600
-
-                    dark:bg-blue-500/10
-                    dark:text-blue-400
-                  "
-                >
-                  Administrator
-                </span>
-
-
-                <span
-                  className="
-                    rounded-full
-                    bg-slate-100
-                    px-3 py-1.5
-                    text-[9px]
-                    font-semibold
-                    text-slate-500
-
-                    dark:bg-white/[0.06]
-                    dark:text-white/40
-                  "
-                >
-                  Verified Account
-                </span>
-
-              </div>
-
-            </div>
-
-          </section>
-
-
-          {/* =================================================
-              CONTENT GRID
-          ================================================= */}
-
-          <section className="mt-5 grid gap-5 xl:grid-cols-[1.3fr_.7fr]">
-
-
-            {/* =================================================
-                PERSONAL INFORMATION
-            ================================================= */}
-
-            <div
-              className="
-                rounded-2xl
-                border border-slate-200
-                bg-white
-                p-5
-                transition-colors
-
-                dark:border-white/10
-                dark:bg-white/[0.03]
-              "
-            >
-
-              <div className="flex items-center justify-between">
-
+                {/* User Information */}
                 <div>
 
-                  <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
-                    Personal Information
-                  </h3>
+                  <div className="flex flex-wrap items-center gap-2">
 
-                  <p className="mt-1 text-[10px] text-slate-400 dark:text-white/30">
-                    Your basic account information
-                  </p>
+                    <h2 className="text-2xl font-bold">
+                      {profile.name}
+                    </h2>
 
-                </div>
-
-
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-[#0B6B50] dark:bg-emerald-500/10 dark:text-emerald-400">
-                  <User size={16} />
-                </div>
-
-              </div>
-
-
-              <div className="mt-6 grid gap-6 sm:grid-cols-2">
-
-                <InfoItem
-                  icon={User}
-                  label="Full Name"
-                  value="Varun Bajpai"
-                />
-
-                <InfoItem
-                  icon={Mail}
-                  label="Email Address"
-                  value="varun@ecotrust.in"
-                />
-
-                <InfoItem
-                  icon={Phone}
-                  label="Phone Number"
-                  value="+91 98765 43210"
-                />
-
-                <InfoItem
-                  icon={MapPin}
-                  label="Location"
-                  value="Uttar Pradesh, India"
-                />
-
-              </div>
-
-            </div>
-
-
-            {/* =================================================
-                ACCOUNT SECURITY
-            ================================================= */}
-
-            <div
-              className="
-                rounded-2xl
-                border border-slate-200
-                bg-white
-                p-5
-                transition-colors
-
-                dark:border-white/10
-                dark:bg-white/[0.03]
-              "
-            >
-
-              <div className="flex items-center gap-3">
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#0B6B50] dark:bg-emerald-500/10 dark:text-emerald-400">
-                  <ShieldCheck size={19} />
-                </div>
-
-                <div>
-
-                  <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
-                    Account Security
-                  </h3>
-
-                  <p className="mt-1 text-[10px] text-slate-400 dark:text-white/30">
-                    Keep your account protected
-                  </p>
-
-                </div>
-
-              </div>
-
-
-              <div className="mt-5 space-y-3">
-
-                <button
-                  className="
-                    flex w-full
-                    items-center
-                    justify-between
-                    rounded-xl
-                    border border-slate-100
-                    p-3
-                    text-left
-                    transition
-
-                    hover:bg-slate-50
-
-                    dark:border-white/[0.07]
-                    dark:hover:bg-white/[0.04]
-                  "
-                >
-
-                  <div className="flex items-center gap-3">
-
-                    <KeyRound
-                      size={16}
-                      className="text-slate-400 dark:text-white/35"
-                    />
-
-                    <div>
-
-                      <p className="text-xs font-semibold text-slate-700 dark:text-white/70">
-                        Change Password
-                      </p>
-
-                      <p className="mt-1 text-[9px] text-slate-400 dark:text-white/25">
-                        Update your login password
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                  <ChevronDown
-                    size={14}
-                    className="-rotate-90 text-slate-400 dark:text-white/30"
-                  />
-
-                </button>
-
-
-                <button
-                  className="
-                    flex w-full
-                    items-center
-                    justify-between
-                    rounded-xl
-                    border border-slate-100
-                    p-3
-                    text-left
-                    transition
-
-                    hover:bg-slate-50
-
-                    dark:border-white/[0.07]
-                    dark:hover:bg-white/[0.04]
-                  "
-                >
-
-                  <div className="flex items-center gap-3">
-
-                    <Lock
-                      size={16}
-                      className="text-slate-400 dark:text-white/35"
-                    />
-
-                    <div>
-
-                      <p className="text-xs font-semibold text-slate-700 dark:text-white/70">
-                        Two-Factor Authentication
-                      </p>
-
-                      <p className="mt-1 text-[9px] text-slate-400 dark:text-white/25">
-                        Add another layer of security
-                      </p>
-
-                    </div>
-
-                  </div>
-
-
-                  <span
-                    className="
-                      rounded-full
-                      bg-emerald-50
-                      px-2 py-1
-                      text-[8px]
-                      font-semibold
-                      text-emerald-600
-
-                      dark:bg-emerald-500/10
-                      dark:text-emerald-400
-                    "
-                  >
-                    Enabled
-                  </span>
-
-                </button>
-
-              </div>
-
-            </div>
-
-          </section>
-
-
-          {/* =================================================
-              ORGANIZATION
-          ================================================= */}
-
-          <section
-            className="
-              mt-5
-              rounded-2xl
-              border border-slate-200
-              bg-white
-              p-5
-              transition-colors
-
-              dark:border-white/10
-              dark:bg-white/[0.03]
-            "
-          >
-
-            <div className="flex items-center gap-3">
-
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#0B6B50] dark:bg-emerald-500/10 dark:text-emerald-400">
-                <Building2 size={19} />
-              </div>
-
-              <div>
-
-                <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
-                  Organization & Access
-                </h3>
-
-                <p className="mt-1 text-[10px] text-slate-400 dark:text-white/30">
-                  Your EcoTrust organization and assigned facilities
-                </p>
-
-              </div>
-
-            </div>
-
-
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
-
-              {/* Organization */}
-
-              <div
-                className="
-                  rounded-xl
-                  border border-slate-100
-                  p-4
-
-                  dark:border-white/[0.07]
-                "
-              >
-
-                <p className="text-[9px] uppercase tracking-wide text-slate-400 dark:text-white/25">
-                  Organization
-                </p>
-
-                <p className="mt-2 text-sm font-bold text-slate-700 dark:text-white/75">
-                  EcoTrust Authority
-                </p>
-
-                <p className="mt-1 text-[9px] text-slate-400 dark:text-white/30">
-                  Environmental Monitoring Division
-                </p>
-
-              </div>
-
-
-              {/* Role */}
-
-              <div
-                className="
-                  rounded-xl
-                  border border-slate-100
-                  p-4
-
-                  dark:border-white/[0.07]
-                "
-              >
-
-                <p className="text-[9px] uppercase tracking-wide text-slate-400 dark:text-white/25">
-                  Access Role
-                </p>
-
-                <p className="mt-2 text-sm font-bold text-slate-700 dark:text-white/75">
-                  Environmental Officer
-                </p>
-
-                <p className="mt-1 text-[9px] text-slate-400 dark:text-white/30">
-                  Full monitoring access
-                </p>
-
-              </div>
-
-
-              {/* Joined */}
-
-              <div
-                className="
-                  rounded-xl
-                  border border-slate-100
-                  p-4
-
-                  dark:border-white/[0.07]
-                "
-              >
-
-                <p className="text-[9px] uppercase tracking-wide text-slate-400 dark:text-white/25">
-                  Member Since
-                </p>
-
-                <p className="mt-2 text-sm font-bold text-slate-700 dark:text-white/75">
-                  January 2026
-                </p>
-
-                <p className="mt-1 text-[9px] text-slate-400 dark:text-white/30">
-                  Account verified
-                </p>
-
-              </div>
-
-            </div>
-
-          </section>
-
-
-          {/* =================================================
-              ASSIGNED PLANTS
-          ================================================= */}
-
-          <section className="mt-5">
-
-            <div className="mb-4">
-
-              <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
-                Assigned Facilities
-              </h3>
-
-              <p className="mt-1 text-[10px] text-slate-400 dark:text-white/30">
-                Facilities currently under your monitoring access
-              </p>
-
-            </div>
-
-
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-
-              {[
-                {
-                  name: "Plant A",
-                  devices: "124 devices",
-                  status: "Healthy",
-                },
-                {
-                  name: "Plant B",
-                  devices: "98 devices",
-                  status: "Attention",
-                },
-                {
-                  name: "Plant C",
-                  devices: "76 devices",
-                  status: "Healthy",
-                },
-                {
-                  name: "Plant D",
-                  devices: "112 devices",
-                  status: "Healthy",
-                },
-              ].map((plant) => (
-
-                <div
-                  key={plant.name}
-                  className="
-                    rounded-2xl
-                    border border-slate-200
-                    bg-white
-                    p-4
-                    transition
-
-                    hover:-translate-y-0.5
-                    hover:shadow-[0_8px_25px_rgba(15,23,42,0.06)]
-
-                    dark:border-white/10
-                    dark:bg-white/[0.03]
-                    dark:hover:bg-white/[0.05]
-                    dark:hover:shadow-none
-                  "
-                >
-
-                  <div className="flex items-start justify-between">
-
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-[#0B6B50] dark:bg-emerald-500/10 dark:text-emerald-400">
-                      <Factory size={16} />
-                    </div>
-
-
-                    <span
-                      className={`
-                        rounded-full
-                        px-2 py-1
-                        text-[8px]
-                        font-semibold
-
-                        ${
-                          plant.status === "Healthy"
-                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-                            : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-                        }
-                      `}
-                    >
-                      {plant.status}
+                    <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-[9px] font-semibold text-emerald-300">
+                      VERIFIED ADMIN
                     </span>
 
                   </div>
 
-
-                  <h4 className="mt-4 text-sm font-bold text-slate-700 dark:text-white/75">
-                    {plant.name}
-                  </h4>
-
-                  <p className="mt-1 text-[9px] text-slate-400 dark:text-white/30">
-                    {plant.devices}
+                  <p className="mt-1 text-sm text-white/60">
+                    {profile.role}
                   </p>
 
+                  <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-white/45">
 
-                  <button
-                    onClick={() =>
-                      navigate("/devices")
-                    }
-                    className="
-                      mt-4
-                      text-[9px]
-                      font-semibold
-                      text-[#0B6B50]
+                    <span className="flex items-center gap-1">
+                      <MapPin size={12} />
+                      {profile.jurisdiction}
+                    </span>
 
-                      hover:underline
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck size={12} />
+                      Admin Access
+                    </span>
 
-                      dark:text-emerald-400
-                    "
-                  >
-                    View facility →
-                  </button>
-
+                  </div>
                 </div>
+              </div>
 
-              ))}
+
+              {/* Edit Button */}
+              <button
+                onClick={handleEdit}
+                className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-[#052E24] transition hover:bg-emerald-50"
+              >
+
+                {editing ? (
+                  <>
+                    <Save size={15} />
+                    Save Changes
+                  </>
+                ) : (
+                  <>
+                    <Edit3 size={15} />
+                    Edit Profile
+                  </>
+                )}
+
+              </button>
 
             </div>
+          </section>
+
+
+          {/* ==================================================
+              PROFILE STATISTICS
+          ================================================== */}
+
+          <section className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+
+            <StatCard
+              value="1,284"
+              label="Factories monitored"
+              icon={Factory}
+            />
+
+            <StatCard
+              value="89"
+              label="Alerts handled"
+              icon={Bell}
+            />
+
+            <StatCard
+              value="248"
+              label="Reports generated"
+              icon={FileText}
+            />
+
+            <StatCard
+              value="98.7%"
+              label="Compliance oversight"
+              icon={ShieldCheck}
+            />
 
           </section>
 
 
-          {/* =================================================
-              RECENT ACTIVITY + ACCOUNT
-          ================================================= */}
+          {/* ==================================================
+              ACCOUNT + SECURITY
+          ================================================== */}
 
-          <section className="mt-5 grid gap-5 lg:grid-cols-[1.3fr_.7fr]">
+          <section className="mt-5 grid gap-5 xl:grid-cols-[1.4fr_.8fr]">
 
 
-            {/* Activity */}
+            {/* =================================================
+                ACCOUNT INFORMATION
+            ================================================= */}
 
-            <div
-              className="
-                rounded-2xl
-                border border-slate-200
-                bg-white
-                p-5
-
-                dark:border-white/10
-                dark:bg-white/[0.03]
-              "
-            >
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-[#0B241D] lg:p-6">
 
               <div className="flex items-center justify-between">
 
                 <div>
 
-                  <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
-                    Recent Account Activity
+                  <h3 className="text-sm font-bold">
+                    Account Information
                   </h3>
 
-                  <p className="mt-1 text-[10px] text-slate-400 dark:text-white/30">
-                    Recent actions performed on EcoTrust
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Your personal and administrative information
                   </p>
 
                 </div>
 
-                <CheckCircle2
+                <User
                   size={18}
-                  className="text-emerald-500"
+                  className="text-[#0B6B50] dark:text-emerald-400"
                 />
 
               </div>
 
 
-              <div className="mt-5 space-y-4">
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+
+                {editing ? (
+                  <>
+                    {/* Name */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Full Name
+                      </label>
+
+                      <input
+                        value={profile.name}
+                        onChange={(e) =>
+                          handleChange(
+                            'name',
+                            e.target.value
+                          )
+                        }
+                        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-[#071A15] dark:text-white"
+                      />
+
+                    </div>
 
 
-                <div className="flex gap-3">
+                    {/* Email */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
 
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Email Address
+                      </label>
 
-                  <div className="flex-1">
+                      <input
+                        value={profile.email}
+                        onChange={(e) =>
+                          handleChange(
+                            'email',
+                            e.target.value
+                          )
+                        }
+                        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-[#071A15] dark:text-white"
+                      />
 
-                    <p className="text-xs font-medium text-slate-700 dark:text-white/70">
-                      Viewed Plant A device health
-                    </p>
+                    </div>
 
-                    <p className="mt-1 text-[9px] text-slate-400 dark:text-white/25">
-                      Today · 10:42 AM
+
+                    {/* Phone */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Phone Number
+                      </label>
+
+                      <input
+                        value={profile.phone}
+                        onChange={(e) =>
+                          handleChange(
+                            'phone',
+                            e.target.value
+                          )
+                        }
+                        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-[#071A15] dark:text-white"
+                      />
+
+                    </div>
+
+
+                    {/* Department */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Department
+                      </label>
+
+                      <input
+                        value={profile.department}
+                        onChange={(e) =>
+                          handleChange(
+                            'department',
+                            e.target.value
+                          )
+                        }
+                        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-[#071A15] dark:text-white"
+                      />
+
+                    </div>
+
+
+                    {/* Role */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Role
+                      </label>
+
+                      <input
+                        value={profile.role}
+                        onChange={(e) =>
+                          handleChange(
+                            'role',
+                            e.target.value
+                          )
+                        }
+                        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-[#071A15] dark:text-white"
+                      />
+
+                    </div>
+
+
+                    {/* Jurisdiction */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Jurisdiction
+                      </label>
+
+                      <input
+                        value={profile.jurisdiction}
+                        onChange={(e) =>
+                          handleChange(
+                            'jurisdiction',
+                            e.target.value
+                          )
+                        }
+                        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-[#071A15] dark:text-white"
+                      />
+
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <InfoField
+                      label="Full Name"
+                      value={profile.name}
+                      icon={User}
+                    />
+
+                    <InfoField
+                      label="Email Address"
+                      value={profile.email}
+                      icon={Mail}
+                    />
+
+                    <InfoField
+                      label="Phone Number"
+                      value={profile.phone}
+                      icon={Phone}
+                    />
+
+                    <InfoField
+                      label="Department"
+                      value={profile.department}
+                      icon={Factory}
+                    />
+
+                    <InfoField
+                      label="Role"
+                      value={profile.role}
+                      icon={ShieldCheck}
+                    />
+
+                    <InfoField
+                      label="Jurisdiction"
+                      value={profile.jurisdiction}
+                      icon={MapPin}
+                    />
+                  </>
+                )}
+
+              </div>
+            </div>
+
+
+            {/* =================================================
+                RIGHT SIDE
+            ================================================= */}
+
+            <div className="space-y-5">
+
+
+              {/* Permissions */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-[#0B241D]">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-[#0B6B50] dark:bg-emerald-400/10 dark:text-emerald-300">
+                    <ShieldCheck size={17} />
+                  </div>
+
+                  <div>
+
+                    <h3 className="text-sm font-bold">
+                      Access & Permissions
+                    </h3>
+
+                    <p className="text-[10px] text-slate-400">
+                      Administrative privileges
                     </p>
 
                   </div>
@@ -1265,184 +819,100 @@ export default function Profile() {
                 </div>
 
 
-                <div className="flex gap-3">
+                <div className="mt-5 space-y-3">
 
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                  {[
+                    'View environmental data',
+                    'Monitor factories',
+                    'Review compliance violations',
+                    'Manage alerts',
+                    'Generate official reports',
+                  ].map((permission) => (
 
-                  <div className="flex-1">
+                    <div
+                      key={permission}
+                      className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300"
+                    >
 
-                    <p className="text-xs font-medium text-slate-700 dark:text-white/70">
-                      Generated compliance report
-                    </p>
+                      <CheckCircle2
+                        size={14}
+                        className="text-emerald-500"
+                      />
 
-                    <p className="mt-1 text-[9px] text-slate-400 dark:text-white/25">
-                      Today · 09:18 AM
-                    </p>
+                      {permission}
 
-                  </div>
+                    </div>
 
-                </div>
-
-
-                <div className="flex gap-3">
-
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
-
-                  <div className="flex-1">
-
-                    <p className="text-xs font-medium text-slate-700 dark:text-white/70">
-                      Reviewed environmental alert
-                    </p>
-
-                    <p className="mt-1 text-[9px] text-slate-400 dark:text-white/25">
-                      Yesterday · 04:36 PM
-                    </p>
-
-                  </div>
-
-                </div>
-
-
-                <div className="flex gap-3">
-
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-slate-400" />
-
-                  <div className="flex-1">
-
-                    <p className="text-xs font-medium text-slate-700 dark:text-white/70">
-                      Signed in to EcoTrust
-                    </p>
-
-                    <p className="mt-1 text-[9px] text-slate-400 dark:text-white/25">
-                      Yesterday · 09:02 AM
-                    </p>
-
-                  </div>
+                  ))}
 
                 </div>
 
               </div>
 
-            </div>
+
+              {/* Security */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-[#0B241D]">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300">
+                    <Lock size={16} />
+                  </div>
+
+                  <div>
+
+                    <h3 className="text-sm font-bold">
+                      Security
+                    </h3>
+
+                    <p className="text-[10px] text-slate-400">
+                      Account protection
+                    </p>
+
+                  </div>
+
+                </div>
 
 
-            {/* Account actions */}
+                <div className="mt-5 space-y-2">
 
-            <div
-              className="
-                rounded-2xl
-                border border-slate-200
-                bg-white
-                p-5
+                  {/* Password */}
+                  <button className="flex w-full items-center justify-between rounded-xl border border-slate-200 p-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5">
 
-                dark:border-white/10
-                dark:bg-white/[0.03]
-              "
-            >
+                    <span className="flex items-center gap-2 text-xs font-medium">
 
-              <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
-                Account
-              </h3>
+                      <KeyRound size={14} />
 
-              <p className="mt-1 text-[10px] text-slate-400 dark:text-white/30">
-                Manage your account preferences
-              </p>
+                      Change password
+
+                    </span>
+
+                    <ChevronDown
+                      size={14}
+                      className="-rotate-90 text-slate-400"
+                    />
+
+                  </button>
 
 
-              <div className="mt-5 space-y-2">
+                  {/* 2FA */}
+                  <button className="flex w-full items-center justify-between rounded-xl border border-slate-200 p-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5">
 
+                    <span className="flex items-center gap-2 text-xs font-medium">
 
-                <button
-                  onClick={() =>
-                    navigate("/settings")
-                  }
-                  className="
-                    flex w-full
-                    items-center gap-3
-                    rounded-xl
-                    border border-slate-100
-                    p-3
-                    text-left
-                    transition
+                      <ShieldCheck size={14} />
 
-                    hover:bg-slate-50
+                      Two-factor authentication
 
-                    dark:border-white/[0.07]
-                    dark:hover:bg-white/[0.04]
-                  "
-                >
+                    </span>
 
-                  <Settings
-                    size={16}
-                    className="text-slate-400 dark:text-white/35"
-                  />
+                    <span className="rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                      Enabled
+                    </span>
 
-                  <span className="text-xs font-semibold text-slate-600 dark:text-white/60">
-                    Account Settings
-                  </span>
+                  </button>
 
-                </button>
-
-
-                <button
-                  className="
-                    flex w-full
-                    items-center gap-3
-                    rounded-xl
-                    border border-slate-100
-                    p-3
-                    text-left
-                    transition
-
-                    hover:bg-slate-50
-
-                    dark:border-white/[0.07]
-                    dark:hover:bg-white/[0.04]
-                  "
-                >
-
-                  <Lock
-                    size={16}
-                    className="text-slate-400 dark:text-white/35"
-                  />
-
-                  <span className="text-xs font-semibold text-slate-600 dark:text-white/60">
-                    Privacy & Security
-                  </span>
-
-                </button>
-
-
-                <button
-                  className="
-                    mt-2
-                    flex w-full
-                    items-center gap-3
-                    rounded-xl
-                    border border-red-100
-                    bg-red-50/50
-                    p-3
-                    text-left
-                    transition
-
-                    hover:bg-red-50
-
-                    dark:border-red-500/10
-                    dark:bg-red-500/5
-                    dark:hover:bg-red-500/10
-                  "
-                >
-
-                  <LogOut
-                    size={16}
-                    className="text-red-500"
-                  />
-
-                  <span className="text-xs font-semibold text-red-600 dark:text-red-400">
-                    Sign Out
-                  </span>
-
-                </button>
+                </div>
 
               </div>
 
@@ -1451,85 +921,100 @@ export default function Profile() {
           </section>
 
 
-          {/* =================================================
-              FOOTER
-          ================================================= */}
+          {/* ==================================================
+              RECENT ACTIVITY
+          ================================================== */}
 
-          <section
-            className="
-              mt-5
-              flex flex-col
-              gap-3
-              rounded-2xl
-              border border-emerald-100
-              bg-emerald-50/50
-              p-5
+          <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-[#0B241D] lg:p-6">
 
-              dark:border-emerald-500/20
-              dark:bg-emerald-500/10
+            <div className="flex items-center justify-between">
 
-              sm:flex-row
-              sm:items-center
-            "
-          >
+              <div>
 
-            <div
-              className="
-                flex h-10 w-10
-                items-center justify-center
-                rounded-xl
-                bg-emerald-100
-                text-emerald-600
+                <h3 className="text-sm font-bold">
+                  Recent Admin Activity
+                </h3>
 
-                dark:bg-emerald-500/10
-                dark:text-emerald-400
-              "
-            >
-              <Leaf size={19} />
-            </div>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Your latest actions across EcoTrust
+                </p>
 
+              </div>
 
-            <div className="flex-1">
-
-              <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                EcoTrust Environmental Intelligence
-              </p>
-
-              <p className="mt-1 text-[10px] text-emerald-700/70 dark:text-emerald-300/50">
-                Your account has access to environmental monitoring,
-                compliance analytics and facility intelligence.
-              </p>
+              <button className="text-[10px] font-semibold text-[#0B6B50] hover:underline dark:text-emerald-400">
+                View activity log →
+              </button>
 
             </div>
 
 
-            <span
-              className="
-                flex items-center gap-1.5
-                rounded-full
-                bg-white
-                px-3 py-1.5
-                text-[9px]
-                font-semibold
-                text-emerald-600
+            <div className="mt-5 grid gap-3 lg:grid-cols-2">
 
-                dark:bg-white/10
-                dark:text-emerald-400
-              "
-            >
+              {activity.map((item) => {
 
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                const Icon = item.icon;
 
-              Account Secure
+                return (
+                  <div
+                    key={item.title}
+                    className="flex items-center gap-3 rounded-xl border border-slate-100 p-3 dark:border-white/10"
+                  >
 
-            </span>
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[#0B6B50] dark:bg-emerald-400/10 dark:text-emerald-300">
+                      <Icon size={16} />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+
+                      <p className="truncate text-xs font-semibold">
+                        {item.title}
+                      </p>
+
+                      <p className="mt-0.5 truncate text-[9px] text-slate-400">
+                        {item.description}
+                      </p>
+
+                    </div>
+
+                    <span className="shrink-0 text-[9px] text-slate-400">
+                      {item.time}
+                    </span>
+
+                  </div>
+                );
+              })}
+
+            </div>
 
           </section>
+
+
+          {/* ==================================================
+              SECURITY STATUS
+          ================================================== */}
+
+          <div className="mt-5 flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-400/10 dark:bg-emerald-400/5">
+
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400">
+              <ShieldCheck size={17} />
+            </div>
+
+            <div>
+
+              <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                Your account is secure
+              </p>
+
+              <p className="mt-0.5 text-[10px] text-emerald-700/70 dark:text-emerald-400/60">
+                Last security verification was completed today.
+              </p>
+
+            </div>
+
+          </div>
 
         </main>
-
       </div>
-
     </div>
   );
 }

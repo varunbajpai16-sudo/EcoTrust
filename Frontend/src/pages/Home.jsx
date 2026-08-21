@@ -905,7 +905,7 @@ function Home() {
                   icon: CircleAlert,
                   title: 'Smart Alerts',
                   text: 'Get notified before environmental parameters become critical.',
-                  path:"/alert"
+                  path:"/Alerts"
                 },
               ].map(({ icon: Icon, title, text, path }) => (
                 <div
