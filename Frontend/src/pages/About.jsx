@@ -101,6 +101,7 @@ export default function About() {
   const navigate = useNavigate();
   const theme = useSelector((state) => state.theme.theme);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   // Keep the `dark` class on <html> in sync with the redux theme state,
   // in case this page is opened directly without Home.jsx having run first.
@@ -112,6 +113,25 @@ export default function About() {
       root.classList.remove('dark');
     }
   }, [theme]);
+
+  // Close image preview with the Escape key and prevent page scrolling while open.
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedImage(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [selectedImage]);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F7FAF8] font-[Inter,sans-serif] text-[#0F172A] dark:bg-[#071A15] dark:text-white transition-colors duration-300">
@@ -202,11 +222,17 @@ export default function About() {
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <button className="rounded-lg border border-[#0B6B50] py-2.5 text-sm font-semibold text-[#064E3B] dark:border-emerald-500/40 dark:text-emerald-300">
+              <button
+                onClick={() => navigate('/login')}
+                className="rounded-lg border border-[#0B6B50] py-2.5 text-sm font-semibold text-[#064E3B] dark:border-emerald-500/40 dark:text-emerald-300"
+              >
                 Log In
               </button>
 
-              <button className="rounded-lg bg-[#0B6B50] py-2.5 text-sm font-semibold text-white">
+              <button
+                onClick={() => navigate('/selectrole')}
+                className="rounded-lg bg-[#0B6B50] py-2.5 text-sm font-semibold text-white"
+              >
                 Get Started
               </button>
             </div>
@@ -363,6 +389,225 @@ export default function About() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Complete EcoTrust Data Pipeline */}
+        <section className="relative overflow-hidden bg-[#F7FAF8] px-5 py-20 dark:bg-[#071A15] lg:px-8 lg:py-28">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute left-1/2 top-20 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-emerald-200/20 blur-3xl dark:bg-emerald-500/5" />
+          </div>
+
+          <div className="relative mx-auto max-w-[1280px]">
+            <div className="mx-auto max-w-3xl text-center">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#0B6B50] dark:text-emerald-400">
+                EcoTrust Intelligence Pipeline
+              </span>
+
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white sm:text-4xl lg:text-5xl">
+                From raw environmental data to trusted action
+              </h2>
+
+              <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-slate-500 dark:text-white/50 sm:text-base">
+                EcoTrust connects factory sensors, CEMS, government records and historical
+                data into one continuous intelligence pipeline. Every reading is validated,
+                scored for confidence, analyzed for abnormal behavior and converted into
+                actionable alerts, investigations and final reports.
+              </p>
+            </div>
+
+            {/* Pipeline diagram */}
+            <div className="mt-10 overflow-hidden rounded-3xl border border-slate-200 bg-white p-3 shadow-[0_25px_80px_rgba(6,78,59,0.10)] dark:border-white/10 dark:bg-[#0A211B] dark:shadow-[0_25px_80px_rgba(0,0,0,0.35)] sm:p-5 lg:p-7">
+              <div className="mt-12">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedImage({
+                    src: '/ecotrust-pipeline.png',
+                    alt: 'EcoTrust complete industrial pollution intelligence pipeline',
+                    title: 'EcoTrust Intelligence Pipeline'
+                  })
+                }
+                className="group block w-full cursor-zoom-in text-left"
+                aria-label="Open EcoTrust pipeline diagram"
+              >
+                <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_60px_rgba(6,78,59,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(6,78,59,0.16)] dark:border-white/10 dark:bg-[#0A211B] dark:shadow-[0_20px_60px_rgba(0,0,0,0.30)] dark:hover:shadow-[0_28px_80px_rgba(0,0,0,0.40)] sm:p-5 lg:p-6">
+                  <div className="rounded-[20px] bg-slate-50 p-3 dark:bg-black/20 sm:p-5 lg:p-7">
+                    <img
+                      src="/ecotrust-pipeline.png"
+                      alt="EcoTrust complete industrial pollution intelligence pipeline showing data sources, ingestion, validation, confidence scoring, historical and real-time analysis, anomaly detection, alerts, officer investigation and final report"
+                      className="mx-auto block h-auto max-h-[560px] w-full object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-white/20 bg-[#052E24]/90 px-4 py-2 text-[11px] font-semibold text-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
+                    Click to explore full pipeline
+                  </div>
+                </div>
+              </button>
+
+              <p className="mt-3 text-center text-xs text-slate-400 dark:text-white/30">
+                Complete EcoTrust intelligence flow · Click to expand
+              </p>
+            </div></div>
+
+            {/* Visual walkthrough */}
+            <div className="mt-12">
+              <div className="mx-auto max-w-2xl text-center">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#0B6B50] dark:text-emerald-400">
+                  Visual Walkthrough
+                </span>
+                <h3 className="mt-3 text-2xl font-bold tracking-tight text-[#0F172A] dark:text-white sm:text-3xl">
+                  See how EcoTrust turns data into decisions
+                </h3>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500 dark:text-white/50">
+                  Explore the major stages of the EcoTrust intelligence pipeline through
+                  the visual flow below.
+                </p>
+              </div>
+
+              <div className="mt-10 grid gap-6 lg:grid-cols-3">
+                {[
+                  {
+                    image: '/ecotrust-data-ingestion.png',
+                    title: '1. Collect & Validate',
+                    text: 'Factory/CEMS readings and government data enter EcoTrust, pass validation checks and receive data-quality signals.',
+                  },
+                  {
+                    image: '/ecotrust-analysis-alerts.png',
+                    title: '2. Analyze & Detect',
+                    text: 'Real-time and historical data are compared to identify trends, abnormal behavior, risk levels and high-priority alerts.',
+                  },
+                  {
+                    image: '/ecotrust-investigation-report.png',
+                    title: '3. Investigate & Report',
+                    text: 'Officers review evidence, choose an action and generate a structured EcoTrust case report with an audit trail.',
+                  },
+                ].map(({ image, title, text }) => (
+                  <div
+                    key={title}
+                    className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-900/10 dark:border-white/10 dark:bg-white/[0.03]"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-black/20 sm:aspect-[16/10] lg:aspect-[4/3]">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedImage({
+                            src: image,
+                            alt: title,
+                            title,
+                          })
+                        }
+                        className="block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
+                        aria-label={`Open ${title} image`}
+                      >
+                        <img
+                          src={image}
+                          alt={title}
+                          className="h-full w-full object-contain bg-slate-50 p-2 transition duration-500 group-hover:scale-[1.02] dark:bg-black/20 sm:p-3"
+                          loading="lazy"
+                        />
+                      </button>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                    </div>
+
+                    <div className="p-5">
+                      <h4 className="text-base font-bold text-[#0F172A] dark:text-white">
+                        {title}
+                      </h4>
+                      <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-white/45">
+                        {text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Explanation cards */}
+            <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  number: '01',
+                  title: 'Data Sources',
+                  text: 'EcoTrust receives pollution readings from factories and CEMS, along with CEMS QA/QC information such as calibration, zero/span checks, analyzer status and diagnostics.',
+                },
+                {
+                  number: '02',
+                  title: 'Data Ingestion',
+                  text: 'CEMS, DAS and APIs send incoming environmental data through the EcoTrust API, where the platform stores the data for continuous processing and analysis.',
+                },
+                {
+                  number: '03',
+                  title: 'Data Validation',
+                  text: 'Each reading passes format, time and value checks. QA/QC signals such as calibration status, drift and analyzer status are also evaluated before data is marked valid or questionable.',
+                },
+                {
+                  number: '04',
+                  title: 'Data Confidence Layer',
+                  text: 'Sensor health, data quality and continuity are combined into a confidence score so users can distinguish reliable readings from data that needs verification.',
+                },
+                {
+                  number: '05',
+                  title: 'History + Real-Time Analysis',
+                  text: 'Live CEMS streams are compared with historical data to identify trends, baselines and recurring patterns, helping EcoTrust determine whether current behavior is normal or abnormal.',
+                },
+                {
+                  number: '06',
+                  title: 'Anomaly Engine',
+                  text: 'The platform checks emission trends against limits and historical behavior. Detected anomalies are evaluated by severity, duration and confidence to calculate risk.',
+                },
+                {
+                  number: '07',
+                  title: 'Alert Engine',
+                  text: 'High-risk events are converted into prioritized alerts using factors such as limit exceedance, persistent increases, abnormal historical patterns, sensor health and data confidence.',
+                },
+                {
+                  number: '08',
+                  title: 'Officer Dashboard',
+                  text: 'Environmental officers can see nearby factories, critical alerts, analytics and trends, then prioritize which facility requires investigation first.',
+                },
+                {
+                  number: '09',
+                  title: 'Investigation',
+                  text: 'Officers review CEMS readings, historical trends, sensor health, data confidence and alert duration before choosing verification, monitoring, field inspection or addressing a data issue.',
+                },
+                {
+                  number: '10',
+                  title: 'Final EcoTrust Report',
+                  text: 'The investigation outcome is converted into a structured case report containing factory details, evidence, emission trends, sensor health, findings, action taken, officer remarks and resolution status.',
+                },
+              ].map(({ number, title, text }) => (
+                <div
+                  key={number}
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-900/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-emerald-500/30"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 font-mono text-xs font-bold text-[#0B6B50] dark:bg-emerald-500/10 dark:text-emerald-400">
+                      {number}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">
+                        {title}
+                      </h3>
+                      <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-white/40">
+                        {text}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-6 text-center dark:border-emerald-500/20 dark:bg-emerald-500/5">
+              <p className="text-sm font-semibold text-[#064E3B] dark:text-emerald-300 sm:text-base">
+                Data Sources → Ingestion → Validation → Confidence → Analysis → Anomaly → Alert → Investigation → Action → Final Report
+              </p>
+              <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-white/40">
+                This continuous flow is what turns raw environmental measurements into trusted, explainable and actionable environmental intelligence.
+              </p>
             </div>
           </div>
         </section>
@@ -645,6 +890,43 @@ export default function About() {
             </div>
           </div>
         </section>
+        {/* Image lightbox */}
+        {selectedImage && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md sm:p-6 lg:p-10"
+            role="dialog"
+            aria-modal="true"
+            aria-label={selectedImage.title}
+            onClick={() => setSelectedImage(null)}
+          >
+            <div
+              className="relative flex max-h-[94vh] max-w-[96vw] flex-col items-center"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedImage(null)}
+                aria-label="Close image preview"
+                className="absolute right-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/60 text-2xl text-white shadow-xl backdrop-blur-sm transition hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              >
+                <X size={22} />
+              </button>
+
+              <div className="overflow-auto rounded-2xl border border-white/20 bg-white/95 p-2 shadow-2xl dark:bg-[#0A211B]/95 sm:p-3">
+                <img
+                  src={selectedImage.src}
+                  alt={selectedImage.alt}
+                  className="max-h-[88vh] max-w-[92vw] rounded-xl object-contain"
+                />
+              </div>
+
+              <p className="mt-3 rounded-full bg-black/60 px-4 py-2 text-center text-xs font-semibold text-white backdrop-blur-sm">
+                {selectedImage.title} · Click outside or press Esc to close
+              </p>
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* Footer */}
