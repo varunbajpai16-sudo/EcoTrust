@@ -893,18 +893,21 @@ function Home() {
                   icon: Wind,
                   title: 'Live Monitoring',
                   text: 'Track CEMS, CEQMS and environmental sensor data in real time.',
+                  path:"/LiveMonitoring"
                 },
                 {
                   icon: ShieldCheck,
                   title: 'Compliance Intelligence',
                   text: 'Know your compliance status instantly with automated alerts.',
+                  path:"/compliance"
                 },
                 {
                   icon: CircleAlert,
                   title: 'Smart Alerts',
                   text: 'Get notified before environmental parameters become critical.',
+                  path:"/alert"
                 },
-              ].map(({ icon: Icon, title, text }) => (
+              ].map(({ icon: Icon, title, text, path }) => (
                 <div
                   key={title}
                   className="group rounded-2xl border border-slate-200 bg-white p-7 transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-900/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-emerald-500/30 dark:hover:shadow-none"
@@ -921,7 +924,7 @@ function Home() {
                     {text}
                   </p>
 
-                  <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#0B6B50] dark:text-emerald-400">
+                  <div onClick={()=>navigate(path)} className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#0B6B50] dark:text-emerald-400 hover:cursor-pointer">
                     Learn more
                     <ArrowRight size={14} />
                   </div>
