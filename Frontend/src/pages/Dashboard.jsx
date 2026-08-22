@@ -507,7 +507,7 @@ function EmissionCard({ item }) {
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
   const isDark = theme === 'dark';
@@ -565,7 +565,10 @@ export default function Dashboard() {
 
             {/* User */}
             <div className="flex items-center gap-2">
-              <div onClick={()=>navigate("/profile")} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white">
+              <div
+                onClick={() => navigate('/profile')}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B6B50] text-xs font-bold text-white"
+              >
                 VB
               </div>
 
@@ -683,10 +686,10 @@ export default function Dashboard() {
                 {/* Real geographic map */}
                 <div className="absolute inset-0">
                   <MapContainer
-                    center={[22.8, 79.2]}
-                    zoom={5}
+                    center={[28.9845, 77.7064]}
+                    zoom={12}
                     minZoom={4}
-                    maxZoom={12}
+                    maxZoom={18}
                     scrollWheelZoom={true}
                     className="h-full w-full"
                   >
@@ -759,6 +762,33 @@ export default function Dashboard() {
                         sensors: '217 sensors',
                         pm25: '26.1 µg/m³',
                       },
+                      {
+                        name: 'Plant A',
+                        city: 'Meerut',
+                        position: [28.9845, 77.7064],
+                        status: 'normal',
+                        score: '98.9%',
+                        sensors: '248 sensors',
+                        pm25: '28.4 µg/m³',
+                      },
+                      {
+                        name: 'Plant B',
+                        city: 'Meerut',
+                        position: [28.97, 77.73],
+                        status: 'warning',
+                        score: '97.4%',
+                        sensors: '182 sensors',
+                        pm25: '61.2 µg/m³',
+                      },
+                      {
+                        name: 'Plant C',
+                        city: 'Meerut',
+                        position: [29.01, 77.68],
+                        status: 'violation',
+                        score: '72.1%',
+                        sensors: '316 sensors',
+                        pm25: '148.7 µg/m³',
+                      },
                     ].map((factory) => {
                       const markerColor =
                         factory.status === 'violation'
@@ -819,7 +849,7 @@ export default function Dashboard() {
                                 </div>
                               </div>
 
-                              <button className="mt-3 w-full rounded-lg bg-[#0B6B50] px-3 py-2 text-[10px] font-semibold text-white">
+                              <button onClick={()=>navigate("/factorydetails")} className="mt-3 w-full rounded-lg bg-[#0B6B50] px-3 py-2 text-[10px] font-semibold text-white">
                                 View factory details →
                               </button>
                             </div>

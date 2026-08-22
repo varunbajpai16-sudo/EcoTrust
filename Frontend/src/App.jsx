@@ -17,6 +17,7 @@ import GovernmentRegistration from './pages/Goverment_USer';
 import IndustryRegistration from './pages/Industry_User';
 import Settings from './pages/setting';
 import Profile from './pages/profile';
+import FactoryDetails from './pages/Factory_Details';
 function App() {
   return (
     <>
@@ -35,6 +36,7 @@ function App() {
         <Route path="/selectrole" element={<SelectRole />} />
          <Route path="/settings" element={<Settings />} />
          <Route path="/profile" element={<Profile />} />
+         <Route path="/factorydetails" element={<FactoryDetails />} />
         <Route
           path="/GovernmentRegistration"
           element={<GovernmentRegistration />}
