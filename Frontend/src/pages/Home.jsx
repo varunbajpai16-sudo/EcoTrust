@@ -892,16 +892,16 @@ function Home() {
 
       {/* Hero */}
       <main>
-        <section className="relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="pointer-events-none absolute inset-0">
+        <section className="relative">
+          {/* Background decoration - moved overflow-hidden inside this div */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-[-200px] top-[200px] h-[500px] w-[500px] rounded-full bg-emerald-100/30 blur-3xl dark:bg-emerald-500/10" />
             <div className="absolute right-[-200px] top-[100px] h-[500px] w-[500px] rounded-full bg-green-100/30 blur-3xl dark:bg-green-500/10" />
           </div>
 
           <div className="relative mx-auto grid max-w-[1400px] items-center gap-12 px-5 pb-20 pt-16 lg:grid-cols-[.85fr_1.15fr] lg:px-8 lg:pb-28 lg:pt-24">
             {/* Hero Copy */}
-            <div className="relative z-10">
+            <div className="relative z-20">
               <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-semibold text-[#064E3B] dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
                 <CheckCircle2 size={15} />
                 Trusted by 500+ Industries
@@ -922,7 +922,7 @@ function Home() {
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="group flex items-center justify-center gap-3 rounded-xl bg-[#0B6B50] px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#064E3B]"
+                  className="group relative z-30 w-fit flex items-center justify-center gap-3 rounded-xl bg-[#0B6B50] px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#064E3B] focus:outline-none focus:ring-2 focus:ring-[#0B6B50] focus:ring-offset-2 dark:focus:ring-offset-[#071A15]"
                 >
                   Explore Dashboard
                   <ArrowRight
@@ -930,8 +930,6 @@ function Home() {
                     className="transition group-hover:translate-x-1"
                   />
                 </button>
-
-              
               </div>
 
               {/* Stats */}
