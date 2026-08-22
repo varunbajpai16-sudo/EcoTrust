@@ -14,6 +14,7 @@ import {
   Wind,
   X,
   Zap,
+  ActivityIcon
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -430,6 +431,15 @@ function DashboardPreview() {
 
 function EcoTrustLoader() {
   const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState(0);
+
+  const phases = [
+    'Connecting environmental sensors',
+    'Synchronizing real-time data',
+    'Analyzing environmental signals',
+    'Verifying compliance intelligence',
+    'Preparing your EcoTrust workspace',
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -440,123 +450,226 @@ function EcoTrustLoader() {
         }
         return prev + 1;
       });
-    }, 50);
+    }, 42);
 
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const phaseInterval = setInterval(() => {
+      setPhase((prev) => (prev + 1) % phases.length);
+    }, 850);
+
+    return () => clearInterval(phaseInterval);
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-[9999] flex min-h-screen items-center justify-center overflow-hidden bg-[#052E24] font-[Inter,sans-serif]">
+    <div className="fixed inset-0 z-[9999] flex min-h-screen items-center justify-center overflow-hidden bg-[#031E17] font-[Inter,sans-serif]">
+      {/* Background */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0B6B50]/20 blur-[120px]" />
-        <div className="absolute left-[-150px] top-[-150px] h-[400px] w-[400px] rounded-full bg-emerald-400/10 blur-[100px]" />
-        <div className="absolute bottom-[-200px] right-[-100px] h-[450px] w-[450px] rounded-full bg-emerald-300/10 blur-[120px]" />
+        <div className="absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/[0.07] blur-[140px]" />
+        <div className="absolute -left-[180px] -top-[180px] h-[500px] w-[500px] rounded-full bg-emerald-400/[0.06] blur-[130px]" />
+        <div className="absolute -bottom-[220px] -right-[150px] h-[500px] w-[500px] rounded-full bg-teal-300/[0.05] blur-[130px]" />
 
         <div
-          className="absolute inset-0 opacity-[0.035]"
+          className="absolute inset-0 opacity-[0.025]"
           style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)',
-            backgroundSize: '50px 50px',
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,.7) 1px, transparent 1px)
+            `,
+            backgroundSize: '55px 55px',
           }}
         />
+
+        {[...Array(18)].map((_, i) => (
+          <span
+            key={i}
+            className="absolute h-1 w-1 rounded-full bg-emerald-300/30 animate-[floatParticle_5s_ease-in-out_infinite]"
+            style={{
+              left: `${5 + ((i * 17) % 90)}%`,
+              top: `${8 + ((i * 29) % 84)}%`,
+              animationDelay: `${i * 0.25}s`,
+            }}
+          />
+        ))}
       </div>
 
-      <div className="relative z-10 flex w-full max-w-[520px] flex-col items-center px-6">
-        <div className="relative">
-          <div className="absolute -inset-5 animate-ping rounded-[28px] border border-emerald-400/10" />
+      {/* Main loader */}
+      <div className="relative z-10 flex w-full max-w-[560px] flex-col items-center px-6">
+        {/* Brand */}
+        <div className="flex flex-col items-center">
+          <div className="relative">
+            <div className="absolute -inset-8 animate-[spin_10s_linear_infinite] rounded-full border border-dashed border-emerald-400/10" />
+            <div className="absolute -inset-5 rounded-full border border-emerald-400/[0.12] animate-[logoPulse_2.5s_ease-in-out_infinite]" />
+            <div className="absolute -inset-10 rounded-full bg-emerald-400/[0.08] blur-2xl" />
 
-          <div className="relative flex h-[76px] w-[76px] items-center justify-center rounded-[24px] bg-[#0B6B50] shadow-[0_0_60px_rgba(52,211,153,0.18)]">
-            <Leaf size={39} strokeWidth={1.8} className="text-white" />
+            <div className="relative flex h-[82px] w-[82px] items-center justify-center rounded-[26px] border border-emerald-300/20 bg-gradient-to-br from-[#0F7A5B] to-[#07543F] shadow-[0_0_70px_rgba(52,211,153,0.15)]">
+              <Leaf size={42} strokeWidth={1.7} className="text-emerald-100" />
+              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.9)]" />
+            </div>
+          </div>
+
+          <div className="mt-10 text-center">
+            <h1 className="text-[34px] font-bold tracking-[-0.04em] text-white">
+              Eco<span className="text-emerald-400">Trust</span>
+            </h1>
+
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <span className="h-px w-7 bg-emerald-400/20" />
+              <p className="text-[9px] font-semibold uppercase tracking-[0.32em] text-emerald-300/50">
+                Environmental Intelligence
+              </p>
+              <span className="h-px w-7 bg-emerald-400/20" />
+            </div>
           </div>
         </div>
 
-        <div className="mt-7 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-white">
-            Eco<span className="text-[#34D399]">Trust</span>
-          </h1>
+        {/* Data pipeline */}
+        <div className="relative mt-16 w-full max-w-[470px]">
+          <div className="absolute left-[15%] right-[15%] top-[28px] h-px bg-white/[0.06]" />
+          <div className="absolute left-[15%] top-[28px] h-px w-[25%] overflow-hidden bg-gradient-to-r from-transparent via-emerald-400 to-transparent animate-[dataBeam_2.2s_linear_infinite]" />
 
-          <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.3em] text-emerald-300/50">
-            Environmental Intelligence
-          </p>
-        </div>
+          <div className="relative grid grid-cols-3">
+            <PremiumLoaderNode
+              icon={Zap}
+              label="Sensors"
+              sub="LIVE DATA"
+              delay="0s"
+            />
 
-        <div className="relative mt-12 h-[130px] w-full max-w-[400px]">
-          <div className="absolute left-[12%] right-[12%] top-1/2 h-px bg-emerald-400/10" />
+            <PremiumLoaderNode
+              icon={ActivityIcon}
+              label="Intelligence"
+              sub="ANALYZING"
+              active
+              delay="0.35s"
+            />
 
-          <div className="absolute left-[12%] top-1/2 h-px w-[30%] animate-[loaderLine_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-[#34D399] to-transparent" />
-
-          <LoaderNode icon={Zap} label="Sensors" position="left" delay="0s" />
-          <LoaderNode
-            icon={ActivityIcon}
-            label="Analytics"
-            position="center"
-            delay="0.4s"
-            active
-          />
-          <LoaderNode
-            icon={ShieldCheck}
-            label="Compliance"
-            position="right"
-            delay="0.8s"
-          />
-        </div>
-
-        <div className="mt-4 flex items-center gap-2">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#34D399]" />
-          <p className="text-[10px] font-medium tracking-wide text-white/40">
-            Initializing environmental intelligence
-          </p>
-        </div>
-
-        <div className="mt-7 w-full max-w-[320px]">
-          <div className="flex items-center justify-between">
-            <span className="text-[8px] font-medium uppercase tracking-wider text-white/25">
-              Loading platform
-            </span>
-
-            <span className="font-mono text-[9px] text-emerald-300/70">
-              {progress}%
-            </span>
-          </div>
-
-          <div className="mt-2 h-[3px] overflow-hidden rounded-full bg-white/5">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#0B6B50] to-[#34D399] transition-all duration-75"
-              style={{ width: `${progress}%` }}
+            <PremiumLoaderNode
+              icon={ShieldCheck}
+              label="Compliance"
+              sub="VERIFYING"
+              delay="0.7s"
             />
           </div>
         </div>
 
-        <p className="mt-8 text-center text-[8px] text-white/20">
-          Connecting monitoring systems • Preparing your workspace
-        </p>
+        {/* Status */}
+        <div className="mt-12 flex min-h-[30px] items-center justify-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+
+          <p
+            key={phase}
+            className="animate-[statusFade_.5s_ease-out] text-[10px] font-medium tracking-wide text-white/45"
+          >
+            {phases[phase]}
+          </p>
+        </div>
+
+        {/* Progress */}
+        <div className="mt-7 w-full max-w-[350px]">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[8px] font-semibold uppercase tracking-[0.18em] text-white/20">
+              Initializing platform
+            </span>
+
+            <span className="font-mono text-[9px] font-medium text-emerald-300/70">
+              {progress.toString().padStart(3, '0')}%
+            </span>
+          </div>
+
+          <div className="relative h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
+            <div
+              className="relative h-full rounded-full bg-gradient-to-r from-[#087A58] via-emerald-400 to-emerald-300 transition-all duration-75"
+              style={{ width: `${progress}%` }}
+            >
+              <span className="absolute right-0 top-0 h-full w-16 bg-gradient-to-r from-transparent to-white/60 blur-[2px]" />
+            </div>
+          </div>
+
+          <div className="mt-3 flex justify-between text-[7px] uppercase tracking-[0.15em] text-white/15">
+            <span>Data</span>
+            <span>Intelligence</span>
+            <span>Trust</span>
+          </div>
+        </div>
+
+        <div className="mt-9 text-center">
+          <p className="text-[8px] tracking-wide text-white/20">
+            Real-time environmental intelligence
+          </p>
+
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-[7px] uppercase tracking-[0.18em] text-emerald-300/20">
+            <span>Monitor</span>
+            <span>•</span>
+            <span>Analyze</span>
+            <span>•</span>
+            <span>Protect</span>
+          </div>
+        </div>
       </div>
 
       <style>{`
-        @keyframes loaderLine {
+        @keyframes dataBeam {
           0% {
-            transform: translateX(-100%);
+            transform: translateX(-120%);
             opacity: 0;
           }
-          20% {
+          15% {
             opacity: 1;
           }
-          80% {
+          85% {
             opacity: 1;
           }
           100% {
-            transform: translateX(300%);
+            transform: translateX(480%);
             opacity: 0;
+          }
+        }
+
+        @keyframes logoPulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: .5;
+          }
+          50% {
+            transform: scale(1.08);
+            opacity: 1;
+          }
+        }
+
+        @keyframes floatParticle {
+          0%, 100% {
+            transform: translate3d(0, 0, 0);
+            opacity: .15;
+          }
+          50% {
+            transform: translate3d(0, -22px, 0);
+            opacity: .55;
+          }
+        }
+
+        @keyframes statusFade {
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
 
         @keyframes nodePulse {
           0%, 100% {
-            transform: translateY(-50%) scale(1);
+            transform: translateY(0) scale(1);
           }
           50% {
-            transform: translateY(-50%) scale(1.06);
+            transform: translateY(-2px) scale(1.025);
           }
         }
       `}</style>
@@ -564,61 +677,77 @@ function EcoTrustLoader() {
   );
 }
 
-function LoaderNode({ icon: Icon, label, position, delay, active = false }) {
-  const positionClass =
-    position === 'left'
-      ? 'left-[7%]'
-      : position === 'right'
-        ? 'right-[7%]'
-        : 'left-1/2 -translate-x-1/2';
+function PremiumLoaderNode({
+  icon: Icon,
+  label,
+  sub,
+  active = false,
+  delay,
+}) {
+  // Safety fallback so React never receives an undefined component.
+  const SafeIcon = Icon || Leaf;
 
   return (
     <div
-      className={`absolute top-1/2 -translate-y-1/2 ${positionClass}`}
+      className="relative flex flex-col items-center"
       style={{
-        animation: 'nodePulse 2s ease-in-out infinite',
+        animation: 'nodePulse 2.4s ease-in-out infinite',
         animationDelay: delay,
       }}
     >
       <div
-        className={`relative flex h-12 w-12 items-center justify-center rounded-2xl border ${
-          active
-            ? 'border-emerald-400/30 bg-[#0B6B50] shadow-[0_0_30px_rgba(52,211,153,0.15)]'
-            : 'border-white/10 bg-white/[0.03]'
-        }`}
+        className={`
+          relative flex h-[56px] w-[56px] items-center justify-center
+          rounded-2xl border transition-all duration-500
+          ${
+            active
+              ? 'border-emerald-400/30 bg-gradient-to-br from-[#0D7455] to-[#084B3A] shadow-[0_0_35px_rgba(52,211,153,.13)]'
+              : 'border-white/[0.08] bg-white/[0.025]'
+          }
+        `}
       >
-        <Icon
-          size={18}
-          className={active ? 'text-[#34D399]' : 'text-white/30'}
+        {active && (
+          <div className="absolute -inset-2 rounded-2xl border border-emerald-400/10 animate-pulse" />
+        )}
+
+        <SafeIcon
+          size={20}
+          strokeWidth={1.7}
+          className={active ? 'text-emerald-300' : 'text-white/25'}
+        />
+
+        <span
+          className={`
+            absolute -right-1 -top-1 h-2 w-2 rounded-full
+            ${
+              active
+                ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.8)]'
+                : 'bg-white/10'
+            }
+          `}
         />
       </div>
 
-      <p
-        className={`absolute left-1/2 mt-3 -translate-x-1/2 whitespace-nowrap text-[8px] font-medium ${
-          active ? 'text-emerald-300/70' : 'text-white/20'
-        }`}
-      >
-        {label}
-      </p>
-    </div>
-  );
-}
+      <div className="mt-3 text-center">
+        <p
+          className={`
+            text-[9px] font-semibold
+            ${active ? 'text-emerald-300/80' : 'text-white/35'}
+          `}
+        >
+          {label}
+        </p>
 
-function ActivityIcon({ size = 18, className = '' }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <polyline points="3 12 7 12 10 4 14 20 17 12 21 12" />
-    </svg>
+        <p
+          className={`
+            mt-1 text-[6px] font-medium tracking-[0.18em]
+            ${active ? 'text-emerald-300/30' : 'text-white/15'}
+          `}
+        >
+          {sub}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -654,7 +783,7 @@ function Home() {
 
       // Remember that loader has already been shown
       sessionStorage.setItem('ecotrust-loader-shown', 'true');
-    }, 5000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [loading]);
