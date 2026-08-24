@@ -8,7 +8,7 @@ const connectDB = async () => {
     );
     console.log(
       chalk.cyan("║") +
-        chalk.bold.white("        CEM💨S DATABASE CONNECTION       ") +
+        chalk.bold.white("        CEM💨S DATABASE CONNECTION        ") +
         chalk.cyan("║")
     );
     console.log(
