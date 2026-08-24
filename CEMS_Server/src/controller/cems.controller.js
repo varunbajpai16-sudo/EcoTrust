@@ -2,11 +2,9 @@ import EmissionReading from "../models/EmisionReading.models.js";
 import Sensor from "../models/sensor.models.js";
 import Factory from "../models/Factory.models.js";
 
-import validateEmissionReading from "../services/Validation.services.js";
-
 import ApiError from "../utils/ApiError.utils.js";
 import ApiResponse from "../utils/ApiResponse.utils.js";
-
+import { simulateSensor } from "../services/simulator.services.js";
 
 // ---------------------------------------------------------
 // Get latest reading for a factory
@@ -15,12 +13,24 @@ import ApiResponse from "../utils/ApiResponse.utils.js";
 export const getLatestFactoryReading = async (req, res) => {
   const { factoryId } = req.params;
 
+  const factory = await Factory.findOne({ factoryId });
+
+  if (!factory) {
+    throw new ApiError(404, "Factory not found");
+  }
+
   const reading = await EmissionReading.findOne({
-    factoryId,
+    factoryId: factory._id,
   })
     .sort({ timestamp: -1 })
-    .populate("sensorId", "sensorId sensorType status healthScore")
-    .populate("factoryId", "factoryId name industryType");
+    .populate(
+      "sensorId",
+      "sensorId sensorType status manufacturer modelNumber"
+    )
+    .populate(
+      "factoryId",
+      "factoryId name industryType"
+    );
 
   if (!reading) {
     throw new ApiError(
@@ -46,16 +56,26 @@ export const getLatestFactoryReading = async (req, res) => {
 export const getFactoryReadings = async (req, res) => {
   const { factoryId } = req.params;
 
+  const factory = await Factory.findOne({ factoryId });
+
+  if (!factory) {
+    throw new ApiError(404, "Factory not found");
+  }
+
   const limit = Math.min(
     Number(req.query.limit) || 100,
     1000
   );
 
   const readings = await EmissionReading.find({
-    factoryId,
+    factoryId: factory._id,
   })
     .sort({ timestamp: -1 })
-    .limit(limit);
+    .limit(limit)
+    .populate(
+      "sensorId",
+      "sensorId sensorType status"
+    );
 
   return res.status(200).json(
     new ApiResponse(
@@ -68,33 +88,45 @@ export const getFactoryReadings = async (req, res) => {
 
 
 // ---------------------------------------------------------
-// Get latest reading for a sensor
+// Get readings for a sensor
 // ---------------------------------------------------------
 
 export const getLatestSensorReading = async (req, res) => {
   const { sensorId } = req.params;
 
-  const reading = await EmissionReading.findOne({
-    sensorId,
+  const sensor = await Sensor.findOne({ sensorId });
+
+  if (!sensor) {
+    throw new ApiError(404, "Sensor not found");
+  }
+
+  const readings = await EmissionReading.find({
+    sensorId: sensor._id,
   })
     .sort({ timestamp: -1 })
+    .limit(100)
     .populate(
-      "sensorId",
-      "sensorId sensorType status healthScore"
+      "factoryId",
+      "factoryId name industryType"
     );
-
-  if (!reading) {
-    throw new ApiError(
-      404,
-      "No emission reading found for this sensor"
-    );
-  }
 
   return res.status(200).json(
     new ApiResponse(
       200,
-      reading,
-      "Latest sensor reading fetched successfully"
+      {
+        sensor: {
+          sensorId: sensor.sensorId,
+          sensorType: sensor.sensorType,
+          status: sensor.status,
+          manufacturer: sensor.manufacturer,
+          modelNumber: sensor.modelNumber,
+        },
+
+        count: readings.length,
+
+        readings,
+      },
+      "Sensor emission readings fetched successfully"
     )
   );
 };
@@ -107,10 +139,16 @@ export const getLatestSensorReading = async (req, res) => {
 export const getFactorySensors = async (req, res) => {
   const { factoryId } = req.params;
 
+  const factory = await Factory.findOne({ factoryId });
+
+  if (!factory) {
+    throw new ApiError(404, "Factory not found");
+  }
+
   const sensors = await Sensor.find({
-    factoryId,
+    factoryId: factory._id,
   }).select(
-    "sensorId sensorType manufacturer modelNumber status healthScore simulationMode lastSeen"
+    "sensorId sensorType manufacturer modelNumber status simulationMode lastSeen"
   );
 
   return res.status(200).json(
@@ -124,7 +162,7 @@ export const getFactorySensors = async (req, res) => {
 
 
 // ---------------------------------------------------------
-// Get all factories
+// Get all active factories
 // ---------------------------------------------------------
 
 export const getFactories = async (req, res) => {
@@ -144,71 +182,29 @@ export const getFactories = async (req, res) => {
 };
 
 
-// ---------------------------------------------------------
-// Receive a CEMS reading
-// ---------------------------------------------------------
+export const getsimulated_sensor_data = async (req, res) => {
+    const { sensorId } = req.params;
 
-export const receiveEmissionReading = async (
-  req,
-  res
-) => {
-  const readingData = req.body;
+    if (!sensorId) {
+        throw new ApiError(400, "Sensor Id not found");
+    }
 
-  // -----------------------------------------------
-  // Validate incoming reading
-  // -----------------------------------------------
+    const sensor = await Sensor.findOne({ sensorId });
 
-  const validation =
-    await validateEmissionReading(
-      readingData
-    );
+    if (!sensor) {
+        throw new ApiError(404, "Sensor not found");
+    }
 
-  // -----------------------------------------------
-  // If completely invalid, don't store it
-  // -----------------------------------------------
-
-  if (!validation.isValid) {
-    throw new ApiError(
-      400,
-      "Invalid CEMS emission reading",
-      validation.errors
-    );
-  }
-
-  // -----------------------------------------------
-  // Store reading
-  // -----------------------------------------------
-
-  const reading =
-    await EmissionReading.create({
-      factoryId: readingData.factoryId,
-
-      sensorId: readingData.sensorId,
-
-      timestamp: readingData.timestamp,
-
-      pollutants: readingData.pollutants,
-
-      temperature: readingData.temperature,
-
-      pressure: readingData.pressure,
-
-      flowRate: readingData.flowRate,
-
-      receivedAt: new Date(),
-
-      validationStatus:
-        validation.status,
-
-      validationFlags:
-        validation.warnings,
-    });
-
-  return res.status(201).json(
-    new ApiResponse(
-      201,
-      reading,
-      "CEMS emission reading received successfully"
-    )
-  );
+    const reading = await simulateSensor(sensor);
+    console.log(reading)
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                reading,
+                "Sensor data simulated successfully"
+            )
+        );
 };
+

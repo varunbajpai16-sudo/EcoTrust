@@ -6,7 +6,7 @@ import {
   getLatestFactoryReading,
   getFactoryReadings,
   getLatestSensorReading,
-  receiveEmissionReading,
+  getsimulated_sensor_data
 } from "../controller/cems.controller.js";
 
 const router = express.Router();
@@ -54,15 +54,11 @@ router.get(
   getLatestSensorReading
 );
 
+//Get the simulated data for the sensor
 
-// =========================================================
-// CEMS Data Ingestion
-// =========================================================
-
-// Receive a CEMS emission reading
-router.post(
-  "/readings",
-  receiveEmissionReading
+router.get(
+  "/sensors/:sensorId/simulate",
+  getsimulated_sensor_data
 );
 
 

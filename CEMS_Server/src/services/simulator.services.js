@@ -1,5 +1,5 @@
-import Sensor from "../models/Sensor.js";
-
+import Sensor from "../models/sensor.models.js";
+import EmissionReading from "../models/EmisionReading.models.js";
 
 
 const randomBetween = (min, max) => {
@@ -11,9 +11,6 @@ const randomBetween = (min, max) => {
 const round = (value, decimals = 2) => {
   return Number(value.toFixed(decimals));
 };
-
-
-
 
 const generateNormalData = () => {
   return {
@@ -140,10 +137,9 @@ export const simulateSensor = async (sensor) => {
   try {
     const reading = generateReading(sensor);
 
-  
     if (!reading) {
       console.log(
-        `⚠️  ${sensor.sensorId} → No reading generated (MISSING DATA)`
+        `⚠️ ${sensor.sensorId} → No reading generated (MISSING DATA)`
       );
 
       return null;
@@ -161,18 +157,24 @@ export const simulateSensor = async (sensor) => {
       `CO: ${reading.pollutants.co}`
     );
 
-    return reading;
+    // Store reading in MongoDB
+    const savedReading = await EmissionReading.create(reading);
+
+    console.log(
+      `✅ Reading saved → ${savedReading._id}`
+    );
+
+    return savedReading;
 
   } catch (error) {
     console.error(
-      `❌ Simulator error for ${sensor.sensorId}:`,
+      `❌ Simulator error for ${sensor?.sensorId || "UNKNOWN"}:`,
       error.message
     );
 
     return null;
   }
 };
-
 
 
 export const simulateAllSensors = async () => {
