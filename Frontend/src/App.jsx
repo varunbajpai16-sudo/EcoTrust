@@ -18,6 +18,7 @@ import IndustryRegistration from './pages/Industry_User';
 import Settings from './pages/setting';
 import Profile from './pages/profile';
 import FactoryDetails from './pages/Factory_Details';
+import SensorInvestigation from './pages/Sensorinvestigation';
 function App() {
   return (
     <>
@@ -45,6 +46,7 @@ function App() {
           path="/IndustryRegistration"
           element={<IndustryRegistration />}
         />
+         <Route path="/investigation/:id" element={<SensorInvestigation />} />
       </Routes>
     </>
   );
