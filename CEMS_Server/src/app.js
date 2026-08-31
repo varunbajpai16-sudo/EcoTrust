@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import cemsRoutes from "./routes/cems.route.js";
-import errorMiddleware from "./middlewares/error.middleware.js";
+import errorMiddleware from "./Middlewares/error.middleware.js";
 
 const app = express();
 
