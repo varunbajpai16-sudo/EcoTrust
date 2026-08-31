@@ -1,4 +1,23 @@
-function EcoTrustLoader() {
+import { useState,useEffect } from "react";
+import {
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  CircleAlert,
+  Cloud,
+  Factory,
+  Leaf,
+  Menu,
+  Moon,
+  ShieldCheck,
+  Sun,
+  Wind,
+  X,
+  Zap,
+  ActivityIcon
+} from 'lucide-react';
+export default function EcoTrustLoader() {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState(0);
 
