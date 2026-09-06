@@ -4,7 +4,9 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 
 // 1. Get All Active (Unresolved) Alerts
-export const getActiveAlerts = asyncHandler(async (req, res) => {
+export const getActiveAlerts = asyncHandler(
+  
+  async (req, res) => {
   const { severity, factoryId } = req.query;
 
   const filter = { isResolved: false };
