@@ -5,7 +5,7 @@ import Factory from "../models/Factory.models.js";
 import ApiError from "../utils/ApiError.utils.js";
 import ApiResponse from "../utils/ApiResponse.utils.js";
 import { simulateSensor } from "../services/simulator.services.js";
-
+import {getdashboarddata} from "../services/dashboard_simulation.service.js";
 // ---------------------------------------------------------
 // Get latest reading for a factory
 // ---------------------------------------------------------
@@ -208,3 +208,16 @@ export const getsimulated_sensor_data = async (req, res) => {
         );
 };
 
+
+export const getAreaCompliance = async (req, res) => {
+
+    const data = await getdashboarddata();
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            data,
+            "Area compliance data fetched successfully"
+        )
+    );
+};
