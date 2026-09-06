@@ -17,6 +17,14 @@ const startServer = async () => {
     console.error("Server startup failed:", error);
   }
 };
+app.get("/", (req, res) => {  
+  res.status(200).json({
+    success: true,
+    message: "CEMS Server is running",
+    service: "CEMS Server",
+    timestamp: new Date(),
+  });
+})
 startServer()
 
 
