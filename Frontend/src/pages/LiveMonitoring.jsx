@@ -1349,54 +1349,102 @@ function ParameterCard({ parameter }) {
    DYNAMIC LIVE CHART (Plots Real History Data)
 ========================================================= */
 function DynamicLiveChart({ historyData = [], pollutantKey = 'pm25' }) {
-  // Generate coordinates from actual historical points
+  // The history endpoint can return an array directly or wrap it in data/readings/history.
+  // Support both the backend history shape and the flattened shape so the chart always
+  // plots the actual historical telemetry points.
   const points = useMemo(() => {
-    if (!historyData || historyData.length === 0) {
-      return [
-        { x: 0, y: 150 },
-        { x: 450, y: 140 },
-        { x: 900, y: 130 },
-      ];
+    const rawHistory = Array.isArray(historyData)
+      ? historyData
+      : historyData?.data || historyData?.readings || historyData?.history || [];
+
+    if (!Array.isArray(rawHistory) || rawHistory.length === 0) {
+      return [];
     }
 
-    const values = historyData
-      .slice(0, 15)
-      .reverse()
-      .map((item) => {
-        const val =
-          pollutantKey === 'temperature'
-            ? item.rawReading?.temperature
-            : item.rawReading?.pollutants?.[pollutantKey];
-        return Number(val) || 0;
-      });
+    const getValue = (item) => {
+      const reading =
+        item?.rawReading ||
+        item?.reading ||
+        item?.latestReading ||
+        item ||
+        {};
 
-    const maxVal = Math.max(...values, 50);
-    const minVal = Math.min(...values, 0);
+      const value =
+        pollutantKey === 'temperature'
+          ? reading?.temperature ?? item?.temperature
+          : reading?.pollutants?.[pollutantKey] ??
+            item?.pollutants?.[pollutantKey] ??
+            reading?.[pollutantKey] ??
+            item?.[pollutantKey];
+
+      const numericValue = Number(value);
+      return Number.isFinite(numericValue) ? numericValue : null;
+    };
+
+    const getTimestamp = (item) => {
+      const reading = item?.rawReading || item?.reading || item?.latestReading || item || {};
+      return reading?.timestamp || reading?.readingTimestamp || reading?.createdAt || item?.timestamp || item?.createdAt;
+    };
+
+    const values = rawHistory
+      .map((item) => ({
+        value: getValue(item),
+        timestamp: getTimestamp(item),
+      }))
+      .filter((item) => item.value !== null)
+      .sort((a, b) => {
+        const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return ta - tb;
+      })
+      .slice(-20);
+
+    if (values.length === 0) return [];
+
+    const numericValues = values.map((item) => item.value);
+    const dataMin = Math.min(...numericValues);
+    const dataMax = Math.max(...numericValues);
+    const dataRange = dataMax - dataMin;
+
+    // Add a small visual padding around the real range. This keeps small but real
+    // telemetry changes visible instead of making the line look flat.
+    const padding = dataRange === 0 ? Math.max(dataMax * 0.08, 1) : dataRange * 0.12;
+    const minVal = Math.max(0, dataMin - padding);
+    const maxVal = dataMax + padding;
     const range = maxVal - minVal || 1;
 
-    return values.map((val, idx) => {
-      const x = (idx / Math.max(values.length - 1, 1)) * 900;
-      const normalized = (val - minVal) / range;
-      const y = 260 - normalized * 200; // Keep within 60 to 260 height
-      return { x, y, val };
+    return values.map((item, idx) => {
+      const x = values.length === 1 ? 450 : (idx / (values.length - 1)) * 900;
+      const normalized = (item.value - minVal) / range;
+      const y = 260 - normalized * 200;
+      return { x, y, val: item.value, timestamp: item.timestamp };
     });
   }, [historyData, pollutantKey]);
 
-  // Construct SVG Path
+  // Use a smooth SVG curve instead of straight segments so the telemetry looks
+  // like a real continuous sensor trend while still following the actual points.
   const pathData = useMemo(() => {
     if (points.length === 0) return '';
-    return points.reduce((acc, pt, idx) => {
-      return idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
-    }, '');
+    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+
+    let path = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i += 1) {
+      const prev = points[i - 1];
+      const curr = points[i];
+      const midX = (prev.x + curr.x) / 2;
+      path += ` Q ${midX} ${prev.y}, ${midX} ${(prev.y + curr.y) / 2}`;
+      path += ` T ${curr.x} ${curr.y}`;
+    }
+    return path;
   }, [points]);
 
   const fillData = useMemo(() => {
-    if (points.length === 0) return '';
+    if (points.length < 2 || !pathData) return '';
     const last = points[points.length - 1];
     return `${pathData} L ${last.x} 300 L 0 300 Z`;
   }, [pathData, points]);
 
-  const latestPoint = points[points.length - 1] || { x: 900, y: 150 };
+  const latestPoint = points[points.length - 1];
 
   return (
     <div className="relative h-[300px] w-full">
@@ -1422,11 +1470,25 @@ function DynamicLiveChart({ historyData = [], pollutantKey = 'pm25' }) {
         ))}
 
         {fillData && <path d={fillData} fill="url(#chartFill)" />}
-        {pathData && <path d={pathData} fill="none" stroke="#0B6B50" strokeWidth="3.5" />}
+        {pathData && points.length > 1 && (
+          <path d={pathData} fill="none" stroke="#0B6B50" strokeWidth="3.5" strokeLinecap="round" />
+        )}
 
-        {/* Highlight latest dot */}
-        <circle cx={latestPoint.x} cy={latestPoint.y} r="6" fill="#0B6B50" />
-        <circle cx={latestPoint.x} cy={latestPoint.y} r="12" fill="#0B6B50" opacity="0.15" />
+        {/* Show actual historical points to make the up/down movement clear. */}
+        {points.map((point, idx) => (
+          <circle
+            key={`${point.timestamp || idx}-${point.val}`}
+            cx={point.x}
+            cy={point.y}
+            r={idx === points.length - 1 ? 5 : 2.5}
+            fill="#0B6B50"
+            opacity={idx === points.length - 1 ? 1 : 0.7}
+          />
+        ))}
+
+        {latestPoint && (
+          <circle cx={latestPoint.x} cy={latestPoint.y} r="12" fill="#0B6B50" opacity="0.15" />
+        )}
       </svg>
 
       <div className="absolute bottom-0 left-0 flex w-full justify-between text-[9px] text-slate-400 dark:text-white/30">
@@ -1515,6 +1577,125 @@ function PlantSelector({ factories = [], selectedPlant, onSelect }) {
 /*=========================================================
 ENVIRONMENT HEALTH SCORE
 =========================================================*/
+/* =========================================================
+   FACTORY DATA BAR CHART
+========================================================= */
+function FactoryBarChart({ factories = [] }) {
+  const [metric, setMetric] = useState('trustScore');
+
+  const metricConfig = {
+    trustScore: { label: 'Trust Score', unit: '', max: 100 },
+    pm25: { label: 'PM2.5', unit: 'µg/m³' },
+    pm10: { label: 'PM10', unit: 'µg/m³' },
+    so2: { label: 'SO₂', unit: 'ppb' },
+    nox: { label: 'NOx', unit: 'ppb' },
+    co: { label: 'CO', unit: 'ppm' },
+    temperature: { label: 'Temperature', unit: '°C' },
+  };
+
+  const config = metricConfig[metric];
+
+  const chartData = useMemo(() => {
+    return factories
+      .map((factory) => {
+        const value =
+          metric === 'trustScore'
+            ? Number(factory.trustScore)
+            : metric === 'temperature'
+              ? Number(factory.rawReading?.temperature)
+              : Number(factory.rawReading?.pollutants?.[metric]);
+
+        return {
+          name: factory.factoryName || factory.factoryId || 'Factory',
+          value: Number.isFinite(value) ? value : 0,
+          verdict: factory.verdict,
+        };
+      })
+      .filter((item) => item.value >= 0);
+  }, [factories, metric]);
+
+  const maxValue =
+    config.max ??
+    Math.max(...chartData.map((item) => item.value), 1);
+
+  return (
+    <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/[0.03] dark:shadow-none">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold dark:text-white">
+              Factory Data Comparison
+            </h3>
+            <span className="rounded-full bg-blue-50 px-2 py-1 text-[8px] font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+              LIVE DATA
+            </span>
+          </div>
+          <p className="mt-1 text-[11px] text-slate-400 dark:text-white/35">
+            Compare live values across all connected factories
+          </p>
+        </div>
+
+        <select
+          value={metric}
+          onChange={(e) => setMetric(e.target.value)}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 outline-none dark:border-white/10 dark:bg-white/5 dark:text-white/70"
+        >
+          {Object.entries(metricConfig).map(([key, item]) => (
+            <option key={key} value={key}>
+              {item.label}
+              {item.unit ? ` (${item.unit})` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {chartData.length === 0 ? (
+        <div className="flex h-[260px] items-center justify-center text-xs text-slate-400">
+          No factory data available for the chart.
+        </div>
+      ) : (
+        <div className="mt-6 space-y-4">
+          {chartData.map((item) => {
+            const percentage = Math.min(
+              (item.value / maxValue) * 100,
+              100
+            );
+
+            const barColor =
+              item.verdict === 'TAMPERED' ||
+              item.verdict === 'FAULTY_SENSOR'
+                ? 'bg-red-500'
+                : item.verdict === 'SUSPICIOUS'
+                  ? 'bg-amber-400'
+                  : 'bg-emerald-500';
+
+            return (
+              <div key={item.name}>
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <span className="truncate text-xs font-semibold text-slate-700 dark:text-white/75">
+                    {item.name}
+                  </span>
+                  <span className="shrink-0 font-mono text-xs font-semibold text-slate-700 dark:text-white">
+                    {item.value.toFixed(1)}
+                    {config.unit ? ` ${config.unit}` : ''}
+                  </span>
+                </div>
+
+                <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function EnvironmentalHealthScore({ plant }) {
   const score =
     plant.status === 'Online'
@@ -1930,6 +2111,8 @@ export default function LiveMonitoring() {
               </div>
             </section>
           )}
+
+          <FactoryBarChart factories={factories} />
 
           {/* Live Parameter Cards */}
           <section>

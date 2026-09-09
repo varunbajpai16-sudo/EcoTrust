@@ -46,15 +46,22 @@ function timeAgo(dateString) {
   return `${diffHours}h ago`;
 }
 
-// Fallback Coordinates for Indian Cities
-const CITY_COORDINATES = {
-  default: [28.6139, 77.209], // Delhi
-  'Plant A': [28.9845, 77.7064], // Meerut
-  'Plant B': [26.8467, 80.9462], // Lucknow
-  'Plant C': [19.076, 72.8777],  // Mumbai
-  'Plant D': [18.5204, 73.8567], // Pune
-  'Plant E': [23.0225, 72.5714], // Ahmedabad
-};
+// Meerut map center
+const MEERUT_CENTER = [28.9845, 77.7064];
+const MEERUT_ZOOM = 12;
+
+// Demo Meerut factory locations used when backend data has no coordinates.
+// Replace these sample coordinates with actual factory GPS coordinates later.
+const DEMO_MEERUT_FACTORY_LOCATIONS = [
+  { latitude: 28.9845, longitude: 77.7064 },
+  { latitude: 28.9718, longitude: 77.7190 },
+  { latitude: 28.9972, longitude: 77.6835 },
+  { latitude: 28.9565, longitude: 77.7395 },
+  { latitude: 29.0125, longitude: 77.7280 },
+  { latitude: 28.9465, longitude: 77.6955 },
+  { latitude: 29.0250, longitude: 77.6820 },
+  { latitude: 28.9650, longitude: 77.6650 },
+];
 
 // Theme Toggle Component
 function ThemeToggle({ className = '' }) {
@@ -273,7 +280,57 @@ export default function Dashboard() {
         getActiveAlerts(),
       ]);
 
-      if (factories) setFactoriesData(factories);
+      if (factories) {
+        // Add demo Meerut coordinates only when a factory has no valid location.
+        // Any real coordinates returned by the backend are preserved.
+        const factoriesWithLocation = factories.map((factory, index) => {
+          const latitude = Number(
+            factory.latitude ??
+            factory.lat ??
+            factory.location?.latitude ??
+            factory.location?.lat
+          );
+          const longitude = Number(
+            factory.longitude ??
+            factory.lng ??
+            factory.lon ??
+            factory.location?.longitude ??
+            factory.location?.lng ??
+            factory.location?.lon
+          );
+
+          const hasValidLocation =
+            Number.isFinite(latitude) &&
+            Number.isFinite(longitude) &&
+            latitude >= -90 &&
+            latitude <= 90 &&
+            longitude >= -180 &&
+            longitude <= 180;
+
+          if (hasValidLocation) return factory;
+
+          const demoLocation =
+            DEMO_MEERUT_FACTORY_LOCATIONS[
+              index % DEMO_MEERUT_FACTORY_LOCATIONS.length
+            ];
+
+          return {
+            ...factory,
+            latitude: demoLocation.latitude,
+            longitude: demoLocation.longitude,
+            location: {
+              ...(factory.location || {}),
+              latitude: demoLocation.latitude,
+              longitude: demoLocation.longitude,
+            },
+            isDemoLocation: true,
+          };
+        });
+
+        setFactoriesData(factoriesWithLocation);
+        console.log("Factories Data with locations:", factoriesWithLocation);
+      }
+
       if (alerts) setAlertsData(alerts);
       setLastRefreshed(new Date());
     } catch (error) {
@@ -520,11 +577,27 @@ export default function Dashboard() {
             <div className="grid lg:grid-cols-[1fr_270px]">
               {/* Map */}
               <div className="relative min-h-[430px] overflow-hidden bg-[#eef5f1] dark:bg-[#0A211B]">
+                {loading && (
+                  <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-white/60 backdrop-blur-[2px] dark:bg-[#071A15]/60">
+                    <div className="flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-xl dark:border-white/10 dark:bg-[#0B241D]">
+                      <div className="h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
+                      <div className="text-center">
+                        <p className="text-xs font-semibold text-slate-700 dark:text-white">
+                          Loading factory locations
+                        </p>
+                        <p className="mt-1 text-[10px] text-slate-400">
+                          Fetching live CEMS data...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="absolute inset-0">
                   <MapContainer
-                    center={[28.9845, 77.7064]}
-                    zoom={7}
-                    minZoom={4}
+                    center={MEERUT_CENTER}
+                    zoom={MEERUT_ZOOM}
+                    minZoom={10}
                     maxZoom={18}
                     scrollWheelZoom={true}
                     className="h-full w-full"
@@ -534,11 +607,37 @@ export default function Dashboard() {
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
-                    {factoriesData.map((factory, index) => {
-                      const pos = CITY_COORDINATES[factory.factoryName] || [
-                        28.6139 + (index * 0.4 - 0.2),
-                        77.209 + (index * 0.4 - 0.2),
-                      ];
+                    {factoriesData.map((factory) => {
+                      // Use the factory's real latitude/longitude from the backend.
+                      const latitude = Number(
+                        factory.latitude ??
+                        factory.lat ??
+                        factory.location?.latitude ??
+                        factory.location?.lat
+                      );
+
+                      const longitude = Number(
+                        factory.longitude ??
+                        factory.lng ??
+                        factory.lon ??
+                        factory.location?.longitude ??
+                        factory.location?.lng ??
+                        factory.location?.lon
+                      );
+
+                      // Do not place factories at fake/random coordinates.
+                      if (
+                        !Number.isFinite(latitude) ||
+                        !Number.isFinite(longitude) ||
+                        latitude < -90 ||
+                        latitude > 90 ||
+                        longitude < -180 ||
+                        longitude > 180
+                      ) {
+                        return null;
+                      }
+
+                      const pos = [latitude, longitude];
 
                       const markerColor =
                         factory.verdict === 'TAMPERED' || factory.verdict === 'FAULTY_SENSOR'
