@@ -241,157 +241,192 @@ export default function Reports() {
     }
   }, [theme]);
 
-  // Construct Dynamic Reports List based on Live Monitored Factories
+  // Construct reports ONLY for individual factories.
+  // No fleet/global report is generated or downloaded.
   const reportsList = useMemo(() => {
     if (factories.length === 0) return [];
 
     const generatedReports = [];
 
-    // 1. Individual Factory Compliance Reports
     factories.forEach((f, idx) => {
-      const plantAlerts = alerts.filter((a) => a.factoryId === f.factoryId || a.factoryName === f.factoryName);
-      generatedReports.push({
-        id: `RPT-CPCB-${f.factoryId || idx + 101}`,
-        name: `${f.factoryName} - CEMS Environmental Audit`,
-        type: 'Compliance',
-        plant: f.factoryName,
-        period: 'Real-time Live Stream',
-        generated: 'Automated Sync',
-        status: f.verdict === 'VERIFIED' ? 'Ready' : 'Under Review',
-        factoryData: f,
-        alerts: plantAlerts,
-      });
+      const factoryId = f.factoryId || `FACTORY-${idx + 101}`;
+      const factoryName = f.factoryName || `Factory ${idx + 1}`;
+      const plantAlerts = alerts.filter(
+        (a) => a.factoryId === f.factoryId || a.factoryName === f.factoryName
+      );
 
-      generatedReports.push({
-        id: `RPT-GAS-${f.factoryId || idx + 101}`,
-        name: `${f.factoryName} - Telemetry Emission Dump`,
-        type: 'Emission',
-        plant: f.factoryName,
-        period: 'Current Shift',
-        generated: 'Real-time',
-        status: 'Ready',
-        factoryData: f,
-        alerts: plantAlerts,
-      });
-    });
-
-    // 2. Comprehensive Fleet Audit Report
-    generatedReports.unshift({
-      id: `RPT-FLEET-GLOBAL`,
-      name: `Central CPCB Industrial Fleet Compliance Dossier`,
-      type: 'Analytics',
-      plant: 'All Monitored Facilities (Fleet View)',
-      period: 'Active Audit Cycle',
-      generated: 'Just now',
-      status: 'Ready',
-      factoryData: null,
-      alerts,
+      generatedReports.push(
+        {
+          id: `RPT-CPCB-${factoryId}`,
+          name: `${factoryName} - CEMS Environmental Audit`,
+          type: 'Compliance',
+          plant: factoryName,
+          period: 'Real-time Live Stream',
+          generated: 'Automated Sync',
+          status: f.verdict === 'VERIFIED' ? 'Ready' : 'Under Review',
+          factoryData: f,
+          alerts: plantAlerts,
+        },
+        {
+          id: `RPT-GAS-${factoryId}`,
+          name: `${factoryName} - Telemetry Emission Report`,
+          type: 'Emission',
+          plant: factoryName,
+          period: 'Current Shift',
+          generated: 'Real-time',
+          status: 'Ready',
+          factoryData: f,
+          alerts: plantAlerts,
+        },
+        {
+          id: `RPT-TAMPER-${factoryId}`,
+          name: `${factoryName} - AI Tamper & Bypass Audit`,
+          type: 'Tamper',
+          plant: factoryName,
+          period: 'Current Audit Cycle',
+          generated: 'Real-time',
+          status: plantAlerts.length > 0 ? 'Under Review' : 'Ready',
+          factoryData: f,
+          alerts: plantAlerts,
+        },
+        {
+          id: `RPT-ANALYTICS-${factoryId}`,
+          name: `${factoryName} - Factory Analytics Report`,
+          type: 'Analytics',
+          plant: factoryName,
+          period: 'Current Audit Cycle',
+          generated: 'Automated Sync',
+          status: 'Ready',
+          factoryData: f,
+          alerts: plantAlerts,
+        }
+      );
     });
 
     return generatedReports;
   }, [factories, alerts]);
 
-  // Dynamic Text Generator for Download and Modal Preview
+  // Factory-only report text generator.
+  // Every report is strictly scoped to its selected factory.
   const createReportText = (report) => {
     const dateStr = new Date().toLocaleString();
-    if (report.id === 'RPT-FLEET-GLOBAL') {
-      const compliantCount = factories.filter((f) => f.trustScore >= 75).length;
-      return `===============================================================
-ECOTRUST CENTRAL REGULATORY INTELLIGENCE DOSSIER
-CPCB / SPCB INDUSTRIAL EMISSION AUDIT SYSTEM
-Generated At: ${dateStr}
-===============================================================
-
-AUDIT SUMMARY OVERVIEW:
----------------------------------------------------------------
-Total Monitored Facilities : ${factories.length}
-Verified Compliant Plants  : ${compliantCount} / ${factories.length}
-Active Violation Incidents : ${alerts.length}
-Overall Fleet Trust Rating : ${Math.round(factories.reduce((acc, f) => acc + (f.trustScore || 100), 0) / (factories.length || 1))}%
-
-DETAILED FACILITY BREAKDOWN:
----------------------------------------------------------------
-${factories
-  .map(
-    (f) =>
-      `• [${f.factoryId}] ${f.factoryName}
-   Trust Score: ${f.trustScore}% | Verdict: ${f.verdict}
-   Active Power Load: ${f.rawReading?.electricityConsumption || 0} kW
-   Pollutants: PM2.5: ${f.rawReading?.pollutants?.pm25 ?? 'N/A'}, SO2: ${f.rawReading?.pollutants?.so2 ?? 'N/A'}, NOx: ${f.rawReading?.pollutants?.nox ?? 'N/A'}
-   AI Explanation: ${f.aiSummary || 'Clean verified baseline.'}
-`
-  )
-  .join('\n')}
-
-VIOLATIONS & TAMPERING LOGS:
----------------------------------------------------------------
-${
-  alerts.length === 0
-    ? 'No active tampering or bypass violations detected across fleet.'
-    : alerts.map((a, i) => `${i + 1}. [${a.severity}] ${a.title} (${a.factoryName}): ${a.description}`).join('\n')
-}
-
----------------------------------------------------------------
-Certified by EcoTrust AI Telemetry Validator Engine.
-`;
-    }
-
     const f = report.factoryData || {};
     const pol = f.rawReading?.pollutants || {};
+    const factoryName = f.factoryName || report.plant || 'Unknown Factory';
+    const factoryId = f.factoryId || 'N/A';
+    const reportType = report.type;
 
-    return `===============================================================
-ECOTRUST REGULATORY COMPLIANCE AUDIT CERTIFICATE
-Report ID: ${report.id}
-Facility: ${report.plant}
-Stack Sensor ID: ${f.sensorId || 'STACK-01'}
-Generation Timestamp: ${dateStr}
-===============================================================
-
-1. EMISSION MEASUREMENTS (CPCB SENSOR TELEMETRY):
+    const reportSections = {
+      Compliance: `1. EMISSION MEASUREMENTS (CPCB SENSOR TELEMETRY):
 ---------------------------------------------------------------
 • PM2.5 (Particulate Matter) : ${pol.pm25 ?? '—'} µg/m³
-• PM10 (Coarse Particulate)  : ${pol.pm10 ?? '—'} µg/m³
-• SO2 (Sulfur Dioxide)       : ${pol.so2 ?? '—'} ppb
-• NOx (Nitrogen Oxides)      : ${pol.nox ?? '—'} ppb
-• CO (Carbon Monoxide)       : ${pol.co ?? '—'} ppm
-• Stack Flow Rate            : ${f.rawReading?.flowRate ?? '—'} m/s
-• Flue Temperature           : ${f.rawReading?.temperature ?? '—'} °C
+• PM10 (Coarse Particulate)   : ${pol.pm10 ?? '—'} µg/m³
+• SO2 (Sulfur Dioxide)        : ${pol.so2 ?? '—'} ppb
+• NOx (Nitrogen Oxides)       : ${pol.nox ?? '—'} ppb
+• CO (Carbon Monoxide)        : ${pol.co ?? '—'} ppm
+• Stack Flow Rate             : ${f.rawReading?.flowRate ?? '—'} m/s
+• Flue Temperature            : ${f.rawReading?.temperature ?? '—'} °C
 
-2. CORRELATION & TAMPER EVALUATION (LAYER 2 & 3):
+2. COMPLIANCE & VALIDATION:
+---------------------------------------------------------------
+• EcoTrust Reliability Score : ${f.trustScore ?? 100} / 100
+• Final Validation Verdict   : ${f.verdict || 'VERIFIED'}
+• AI Auditor Evaluation      : ${f.aiSummary || 'Data conforms to expected stoichiometric ratios.'}`,
+
+      Emission: `1. CEMS EMISSION TELEMETRY:
+---------------------------------------------------------------
+• PM2.5 (Particulate Matter) : ${pol.pm25 ?? '—'} µg/m³
+• PM10 (Coarse Particulate)   : ${pol.pm10 ?? '—'} µg/m³
+• SO2 (Sulfur Dioxide)        : ${pol.so2 ?? '—'} ppb
+• NOx (Nitrogen Oxides)       : ${pol.nox ?? '—'} ppb
+• CO (Carbon Monoxide)        : ${pol.co ?? '—'} ppm
+• Stack Flow Rate             : ${f.rawReading?.flowRate ?? '—'} m/s
+• Flue Temperature            : ${f.rawReading?.temperature ?? '—'} °C
+• Electricity Consumption     : ${f.rawReading?.electricityConsumption ?? 0} kW`,
+
+      Tamper: `1. AI TAMPER & BYPASS EVALUATION:
 ---------------------------------------------------------------
 • Monitored Electricity Load : ${f.rawReading?.electricityConsumption ?? 0} kW
 • EcoTrust Reliability Score : ${f.trustScore ?? 100} / 100
-• Final Validation Verdict   : ${f.verdict || 'VERIFIED'}
-• AI Auditor Evaluation      : ${f.aiSummary || 'Data conforms to expected stoichiometric ratios.'}
+• Validation Verdict         : ${f.verdict || 'VERIFIED'}
+• AI Evaluation              : ${f.aiSummary || 'No suspicious deviation detected.'}
+
+2. FACTORY INCIDENTS:
+---------------------------------------------------------------
+${
+  report.alerts?.length
+    ? report.alerts.map((a, i) => `${i + 1}. [${a.severity}] ${a.title} - ${a.description}`).join('\n')
+    : '✓ Zero non-compliance or bypass tampering flags recorded for this factory.'
+}`,
+
+      Analytics: `1. FACTORY PERFORMANCE SNAPSHOT:
+---------------------------------------------------------------
+• Reliability / Trust Score : ${f.trustScore ?? 100}%
+• Validation Verdict         : ${f.verdict || 'VERIFIED'}
+• Electricity Load           : ${f.rawReading?.electricityConsumption ?? 0} kW
+• PM2.5                      : ${pol.pm25 ?? '—'} µg/m³
+• PM10                       : ${pol.pm10 ?? '—'} µg/m³
+• SO2                        : ${pol.so2 ?? '—'} ppb
+• NOx                        : ${pol.nox ?? '—'} ppb
+• CO                         : ${pol.co ?? '—'} ppm
+• Active Factory Alerts      : ${report.alerts?.length || 0}
+• AI Summary                 : ${f.aiSummary || 'Clean verified baseline.'}`
+    };
+
+    return `===============================================================
+ECOTRUST FACTORY-SPECIFIC REGULATORY REPORT
+CPCB / SPCB INDUSTRIAL EMISSION AUDIT SYSTEM
+===============================================================
+Report ID: ${report.id}
+Factory ID: ${factoryId}
+Facility: ${factoryName}
+Report Type: ${reportType}
+Generated At: ${dateStr}
+===============================================================
+
+${reportSections[reportType] || reportSections.Compliance}
 
 3. INCIDENTS & VIOLATIONS:
 ---------------------------------------------------------------
 ${
-  report.alerts?.length === 0
-    ? '✓ Zero non-compliance or bypass tampering flags recorded.'
-    : report.alerts?.map((a, i) => `${i + 1}. [${a.severity}] ${a.title} - ${a.description}`).join('\n')
+  reportType !== 'Tamper'
+    ? (report.alerts?.length
+        ? report.alerts.map((a, i) => `${i + 1}. [${a.severity}] ${a.title} - ${a.description}`).join('\n')
+        : '✓ No active incidents recorded for this factory.')
+    : 'See Factory Incidents section above.'
 }
 
 ===============================================================
-Report Status: ${report.status} | Digital Signature: VALID
+Report Status: ${report.status}
+Scope: THIS FACTORY ONLY
+Digital Signature: VALID
 ===============================================================
 `;
   };
 
-  // Download Trigger
+  // Download only the selected factory report.
   const downloadReport = (report) => {
+    if (!report?.factoryData) {
+      setReportMessage('Please select a factory report first.');
+      setTimeout(() => setReportMessage(''), 2500);
+      return;
+    }
+
     const text = createReportText(report);
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
+
     link.href = url;
-    link.download = `${report.id}.txt`;
+    link.download = `${report.factoryData.factoryName || report.plant}-${report.type}-Report.txt`
+      .replace(/[^a-z0-9._-]+/gi, '_');
+
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
 
-    setReportMessage(`${report.id} exported successfully.`);
+    setReportMessage(`${report.factoryData.factoryName || report.plant} ${report.type} report downloaded.`);
     setTimeout(() => setReportMessage(''), 2500);
   };
 
@@ -478,16 +513,9 @@ Report Status: ${report.status} | Digital Signature: VALID
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                const fleetReport = reportsList[0];
-                if (fleetReport) setViewReport(fleetReport);
-              }}
-              className="flex items-center gap-2 rounded-lg bg-[#0B6B50] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-[#064E3B]"
-            >
-              <Plus size={15} />
-              Export Fleet Dossier
-            </button>
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-semibold text-[#0B6B50] dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
+              {factories.length} Factory{factories.length !== 1 ? 'ies' : ''} • Individual Reports
+            </div>
           </div>
 
           {/* Top 4 Stats */}
@@ -498,11 +526,61 @@ Report Status: ${report.status} | Digital Signature: VALID
             <StatCard icon={Download} title="Active Violations" value={String(alerts.length)} detail="Recorded in dossiers" type="purple" />
           </section>
 
+          {/* Factory-wise report scope */}
+          <section className="mt-7">
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">Factory-wise Reports</h3>
+              <p className="mt-1 text-[11px] text-slate-400 dark:text-white/30">
+                Every factory has its own separate compliance, emission, tamper and analytics reports.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {factories.map((factory, idx) => {
+                const factoryReports = reportsList.filter(
+                  (r) => r.factoryData?.factoryId === factory.factoryId ||
+                         r.factoryData?.factoryName === factory.factoryName
+                );
+
+                return (
+                  <div
+                    key={factory.factoryId || idx}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-slate-700 dark:text-white/80">
+                          {factory.factoryName || `Factory ${idx + 1}`}
+                        </p>
+                        <p className="mt-1 text-[9px] font-mono text-slate-400 dark:text-white/30">
+                          ID: {factory.factoryId || `FACTORY-${idx + 101}`}
+                        </p>
+                      </div>
+                      <MapPin size={16} className="shrink-0 text-emerald-500" />
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {factoryReports.map((report) => (
+                        <button
+                          key={report.id}
+                          onClick={() => setViewReport(report)}
+                          className="rounded-lg border border-slate-200 px-2 py-2 text-left text-[9px] font-semibold text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-[#0B6B50] dark:border-white/10 dark:text-white/55 dark:hover:border-emerald-500/30 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                        >
+                          {report.type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           {/* Report Type Generation Cards */}
           <section className="mt-7">
             <div className="mb-4">
               <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">Quick Generate Reports</h3>
-              <p className="mt-1 text-[11px] text-slate-400 dark:text-white/30">Select a report format to compile live audit telemetry.</p>
+              <p className="mt-1 text-[11px] text-slate-400 dark:text-white/30">Select a report format. Reports are generated separately for each factory.</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -512,7 +590,7 @@ Report Status: ${report.status} | Digital Signature: VALID
                   <button
                     key={report.title}
                     onClick={() => {
-                      const sampleReport = reportsList.find((r) => r.type === report.type) || reportsList[0];
+                      const sampleReport = reportsList.find((r) => r.type === report.type);
                       if (sampleReport) setViewReport(sampleReport);
                     }}
                     className="group rounded-2xl border border-slate-200 bg-white p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-emerald-500/30"
@@ -537,7 +615,7 @@ Report Status: ${report.status} | Digital Signature: VALID
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">Generated Audit Reports</h3>
-                <p className="mt-1 text-[11px] text-slate-400 dark:text-white/30">Live telemetry dumps ready for CPCB regulatory filing</p>
+                <p className="mt-1 text-[11px] text-slate-400 dark:text-white/30">Each report contains data from one factory only</p>
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -557,6 +635,7 @@ Report Status: ${report.status} | Digital Signature: VALID
                     <option value="All" className="bg-white dark:bg-[#0D2921]">All Types</option>
                     <option value="Compliance" className="bg-white dark:bg-[#0D2921]">Compliance</option>
                     <option value="Emission" className="bg-white dark:bg-[#0D2921]">Emission</option>
+                    <option value="Tamper" className="bg-white dark:bg-[#0D2921]">Tamper</option>
                     <option value="Analytics" className="bg-white dark:bg-[#0D2921]">Analytics</option>
                   </select>
                 </div>
@@ -667,7 +746,7 @@ Report Status: ${report.status} | Digital Signature: VALID
               </button>
               <button onClick={() => downloadReport(viewReport)} className="flex items-center gap-2 rounded-lg bg-[#0B6B50] px-4 py-2 text-[10px] font-semibold text-white hover:bg-[#064E3B]">
                 <Download size={13} />
-                Export Audit File (.txt)
+                Download Factory Report (.txt)
               </button>
             </div>
           </div>
