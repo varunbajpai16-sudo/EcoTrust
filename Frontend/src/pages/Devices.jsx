@@ -227,6 +227,29 @@ function DeviceHealth({ quality }) {
   );
 }
 
+
+/* =========================================================
+   PAGE LOADER
+========================================================= */
+function PageLoader() {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#F7FAF8]/95 backdrop-blur-sm dark:bg-[#071A15]/95">
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative flex h-16 w-16 items-center justify-center">
+          <div className="absolute inset-0 animate-spin rounded-full border-4 border-emerald-100 border-t-[#0B6B50] dark:border-white/10 dark:border-t-emerald-400" />
+          <Leaf size={24} className="text-[#0B6B50] dark:text-emerald-400" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-slate-700 dark:text-white">Loading Devices...</p>
+          <p className="mt-1 text-[10px] text-slate-400 dark:text-white/40">
+            Fetching live CEMS hardware data...
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* =========================================================
    MAIN DEVICES COMPONENT
 ========================================================= */
@@ -340,7 +363,10 @@ export default function Devices() {
   }, [devices, selectedPlant]);
 
   return (
-    <div className="min-h-screen bg-[#F7FAF8] font-[Inter,sans-serif] text-[#0F172A] transition-colors duration-300 dark:bg-[#071A15] dark:text-white">
+    <>
+      {loading && factoriesRaw.length === 0 && <PageLoader />}
+
+      <div className="min-h-screen bg-[#F7FAF8] font-[Inter,sans-serif] text-[#0F172A] transition-colors duration-300 dark:bg-[#071A15] dark:text-white">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
       <div className="min-w-0 lg:ml-[250px]">
@@ -749,5 +775,6 @@ export default function Devices() {
         </main>
       </div>
     </div>
+    </>
   );
 }
