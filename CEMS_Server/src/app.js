@@ -58,23 +58,5 @@ app.use(
 );
 
 
-// =========================================================
-// 404 Handler
-// =========================================================
-
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route not found: ${req.method} ${req.originalUrl}`,
-  });
-});
-
-
-// =========================================================
-// Global Error Handler
-// =========================================================
-
-app.use(errorMiddleware);
-
 
 export default app;
