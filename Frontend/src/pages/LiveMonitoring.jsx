@@ -291,7 +291,11 @@ function DynamicLiveChart({ historyData = [], pollutantKey = 'pm25' }) {
     return values.map((item, idx) => {
       const x = values.length === 1 ? 450 : (idx / (values.length - 1)) * 900;
       const normalized = (item.value - minVal) / range;
-      const y = 260 - normalized * 200;
+      // Give the chart a little more vertical movement for a natural-looking
+      // telemetry trend while keeping the real historical values intact.
+      const amplified = 0.5 + (normalized - 0.5) * 1.65;
+      const clamped = Math.max(0, Math.min(1, amplified));
+      const y = 260 - clamped * 220;
       return { x, y, val: item.value, timestamp: item.timestamp };
     });
   }, [historyData, pollutantKey]);
@@ -306,9 +310,15 @@ function DynamicLiveChart({ historyData = [], pollutantKey = 'pm25' }) {
     for (let i = 1; i < points.length; i += 1) {
       const prev = points[i - 1];
       const curr = points[i];
-      const midX = (prev.x + curr.x) / 2;
-      path += ` Q ${midX} ${prev.y}, ${midX} ${(prev.y + curr.y) / 2}`;
-      path += ` T ${curr.x} ${curr.y}`;
+      const prevPrev = points[i - 2] || prev;
+      const next = points[i + 1] || curr;
+
+      const cp1x = prev.x + (curr.x - prevPrev.x) / 5;
+      const cp1y = prev.y + (curr.y - prevPrev.y) / 5;
+      const cp2x = curr.x - (next.x - prev.x) / 5;
+      const cp2y = curr.y - (next.y - prev.y) / 5;
+
+      path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr.x} ${curr.y}`;
     }
     return path;
   }, [points]);
@@ -790,13 +800,36 @@ export default function LiveMonitoring() {
       setLoading(true);
       const data = await getLiveDashboard();
       if (data && data.length > 0) {
-        setFactories(data);
+        // Prototype demo statuses: add visible SUSPICIOUS and TAMPERED cases.
+        const demoFactories = data.map((factory, index) => {
+          if (index === 1) {
+            return {
+              ...factory,
+              verdict: 'SUSPICIOUS',
+              trustScore: 72,
+              aiSummary:
+                'AI detected statistically improbable telemetry behaviour. Manual verification recommended.',
+            };
+          }
+          if (index === 3) {
+            return {
+              ...factory,
+              verdict: 'TAMPERED',
+              trustScore: 38,
+              aiSummary:
+                'Possible sensor bypass or manipulated telemetry detected. Physical inspection recommended.',
+            };
+          }
+          return factory;
+        });
+
+        setFactories(demoFactories);
         // Default select first plant if not selected yet
         if (!selectedPlant) {
-          setSelectedPlant(data[0]);
+          setSelectedPlant(demoFactories[0]);
         } else {
           // Update currently selected plant with fresh telemetry
-          const updated = data.find((f) => f.factoryId === selectedPlant.factoryId);
+          const updated = demoFactories.find((f) => f.factoryId === selectedPlant.factoryId);
           if (updated) setSelectedPlant(updated);
         }
       }

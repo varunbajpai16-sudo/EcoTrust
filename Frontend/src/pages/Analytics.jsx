@@ -100,42 +100,178 @@ function Sidebar({ open, setOpen }) {
 }
 
 /* =========================================================
-   DYNAMIC OVERLAY CHART (Power Corridor vs Reported Reading)
+   PROFESSIONAL CORRELATION SUMMARY
 ========================================================= */
-function OverlayChart({ history = [], expectedMin = 20, expectedMax = 50, unit = 'ppb' }) {
-  const safeHistory = history.length > 0 ? history : [expectedMin, (expectedMin + expectedMax) / 2, expectedMax];
-  const allValues = [...safeHistory, expectedMin, expectedMax];
-  const max = Math.max(...allValues, expectedMax + 10) * 1.1;
-  const min = Math.max(0, Math.min(...allValues, expectedMin - 5) * 0.9);
-  const range = max - min || 1;
+function CorrelationSummary({ analysis, factory }) {
+  const deviation = analysis.expectedMax
+    ? Math.round(((analysis.reportedValue - analysis.expectedMax) / analysis.expectedMax) * 100)
+    : 0;
 
-  const toY = (v) => 160 - ((v - min) / range) * 140;
-  const toX = (i) => (i / Math.max(safeHistory.length - 1, 1)) * 560;
-
-  const bandTop = Math.max(10, toY(expectedMax));
-  const bandBottom = Math.min(160, toY(expectedMin));
-  const bandHeight = Math.max(4, bandBottom - bandTop);
-
-  const linePoints = safeHistory.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
+  const status = analysis.inRange ? 'Within expected range' : 'Above expected corridor';
 
   return (
-    <svg viewBox="0 0 560 170" className="h-52 w-full overflow-visible">
-      {/* Expected Range Band (CPCB Power Correlation Corridor) */}
-      <rect x="0" y={bandTop} width="560" height={bandHeight} rx="4" className="fill-emerald-500/15 dark:fill-emerald-400/20" />
-      <line x1="0" y1={bandTop} x2="560" y2={bandTop} strokeDasharray="4 4" className="stroke-emerald-500/60" strokeWidth="1.5" />
-      <line x1="0" y1={bandBottom} x2="560" y2={bandBottom} strokeDasharray="4 4" className="stroke-emerald-500/60" strokeWidth="1.5" />
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-[#0B241D]">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+            Physical Correlation
+          </p>
+          <h3 className="mt-1 text-lg font-bold">Emission Load Assessment</h3>
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            {factory.factoryName} · {analysis.unit} · {selectedPollutantLabel(analysis)}
+          </p>
+        </div>
 
-      {/* Grid Lines */}
-      {[30, 80, 130].map((y) => (
-        <line key={y} x1="0" y1={y} x2="560" y2={y} strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-white/10" />
-      ))}
+        <span className={`w-fit rounded-full px-3 py-1.5 text-[9px] font-bold ${
+          analysis.inRange
+            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300'
+            : 'bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-300'
+        }`}>
+          {analysis.inRange ? '● NORMAL CORRELATION' : '● REVIEW REQUIRED'}
+        </span>
+      </div>
 
-      {/* Actual Sensor Reading Polyline */}
-      <polyline points={linePoints} fill="none" strokeWidth="3" className="stroke-red-500" />
-      {safeHistory.map((v, i) => (
-        <circle key={i} cx={toX(i)} cy={toY(v)} r="3.5" className="fill-red-500 stroke-white stroke-2" />
-      ))}
-    </svg>
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Reported CEMS</p>
+          <p className="mt-2 text-2xl font-bold">{analysis.reportedValue} <span className="text-xs font-medium text-slate-400">{analysis.unit}</span></p>
+          <p className="mt-1 text-[9px] text-slate-400">Current sensor reading</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Expected Corridor</p>
+          <p className="mt-2 text-2xl font-bold">{analysis.expectedMin}–{analysis.expectedMax}</p>
+          <p className="mt-1 text-[9px] text-slate-400">{analysis.unit} based on plant load</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Deviation</p>
+          <p className={`mt-2 text-2xl font-bold ${deviation > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+            {deviation > 0 ? '+' : ''}{deviation}%
+          </p>
+          <p className="mt-1 text-[9px] text-slate-400">{status}</p>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-xl border border-slate-100 p-4 dark:border-white/10">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Load-to-emission relationship</span>
+          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+            {analysis.power} kW active load
+          </span>
+        </div>
+
+        <div className="relative h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+          <div
+            className="absolute inset-y-0 rounded-full bg-gradient-to-r from-emerald-500 via-amber-400 to-red-500"
+            style={{ width: '100%' }}
+          />
+          <div
+            className="absolute top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_2px_rgba(15,23,42,0.35)]"
+            style={{
+              left: `${Math.max(1, Math.min(99, ((analysis.reportedValue - analysis.expectedMin) / Math.max(1, analysis.expectedMax - analysis.expectedMin)) * 100))}%`,
+            }}
+          />
+        </div>
+
+        <div className="mt-2 flex justify-between text-[8px] text-slate-400">
+          <span>Expected minimum</span>
+          <span>Expected maximum</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function selectedPollutantLabel(analysis) {
+  return analysis.pollutantLabel || 'Selected pollutant';
+}
+
+/* =========================================================
+   PROFESSIONAL FACTORY BAR ANALYTICS
+========================================================= */
+function FactoryAnalyticsBars({ factories = [] }) {
+  const rows = factories.map((f) => ({
+    name: f.factoryName || f.factoryId || 'Factory',
+    id: f.factoryId || '',
+    power: Number(f.rawReading?.electricityConsumption) || 0,
+    so2: Number(f.rawReading?.pollutants?.so2) || 0,
+    nox: Number(f.rawReading?.pollutants?.nox) || 0,
+    pm25: Number(f.rawReading?.pollutants?.pm25) || 0,
+  }));
+
+  const max = Math.max(1, ...rows.flatMap(r => [r.power, r.so2, r.nox, r.pm25]));
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-[#0B241D]">
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+            Factory Performance
+          </p>
+          <h3 className="mt-1 text-base font-bold">Power & Emission Comparison</h3>
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            Cross-factory comparison from live CEMS telemetry.
+          </p>
+        </div>
+        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-bold text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300">
+          LIVE
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <svg viewBox={`0 0 ${Math.max(760, rows.length * 180)} 350`} className="h-[330px] min-w-[760px] w-full">
+          {[50, 112, 174, 236, 300].map(y => (
+            <line key={y} x1="45" y1={y} x2={Math.max(730, rows.length * 180)} y2={y}
+              strokeDasharray="3 4" className="stroke-slate-200 dark:stroke-white/10" />
+          ))}
+
+          {rows.map((r, i) => {
+            const center = 90 + i * 180;
+            const bars = [
+              ['power', r.power, 'fill-emerald-500'],
+              ['so2', r.so2, 'fill-amber-400'],
+              ['nox', r.nox, 'fill-blue-500'],
+              ['pm25', r.pm25, 'fill-violet-500'],
+            ];
+
+            return (
+              <g key={`${r.id}-${i}`}>
+                {bars.map(([key, value, cls], j) => {
+                  const h = Math.max(3, (value / max) * 250);
+                  const x = center - 38 + j * 20;
+                  const y = 300 - h;
+                  return (
+                    <g key={key}>
+                      <rect x={x} y={y} width="14" height={h} rx="3" className={cls} opacity="0.9" />
+                      <text x={x + 7} y={Math.max(12, y - 5)} textAnchor="middle"
+                        className="fill-slate-500 dark:fill-slate-400" fontSize="8" fontWeight="600">
+                        {value}
+                      </text>
+                    </g>
+                  );
+                })}
+                <text x={center} y="322" textAnchor="middle"
+                  className="fill-slate-700 dark:fill-slate-300" fontSize="9" fontWeight="600">
+                  {(r.name || '').length > 19 ? `${r.name.slice(0, 19)}…` : r.name}
+                </text>
+                <text x={center} y="338" textAnchor="middle"
+                  className="fill-slate-400 dark:fill-slate-500" fontSize="8">
+                  {r.id}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4 text-[9px] text-slate-500 dark:border-white/10 dark:text-slate-400">
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-emerald-500" /> Electricity</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-amber-400" /> SO₂</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-blue-500" /> NOx</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-violet-500" /> PM2.5</span>
+      </div>
+    </div>
   );
 }
 
@@ -196,7 +332,16 @@ export default function Analytics() {
   const correlationAnalysis = useMemo(() => {
     if (!selectedFactory) return null;
 
-    const power = selectedFactory.rawReading?.electricityConsumption || 100;
+    const rawPower = Number(selectedFactory.rawReading?.electricityConsumption);
+    const demoPowerByFactory = {
+      'F-102': 420,
+      'F-205': 315,
+      'F-318': 510,
+    };
+    const power =
+      rawPower > 0
+        ? rawPower
+        : demoPowerByFactory[selectedFactory.factoryId] || 350;
     const pollutants = selectedFactory.rawReading?.pollutants || {};
 
     let reportedValue = pollutants[selectedPollutant] ?? 0;
@@ -234,6 +379,14 @@ export default function Analytics() {
     return {
       reportedValue,
       unit,
+      pollutantLabel:
+        selectedPollutant === 'so2'
+          ? 'SO₂'
+          : selectedPollutant === 'nox'
+          ? 'NOx'
+          : selectedPollutant === 'pm25'
+          ? 'PM2.5'
+          : 'CO',
       expectedMin,
       expectedMax,
       inRange,
@@ -340,44 +493,12 @@ export default function Analytics() {
           </div>
 
           <div className="grid gap-5 lg:grid-cols-3">
-            {/* Main Correlation Overlay Graph */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 transition-colors duration-300 dark:border-white/10 dark:bg-[#0B241D] lg:col-span-2">
-              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
-                    {selectedFactory.factoryName} · Parameter: {selectedPollutant.toUpperCase()}
-                  </p>
-                  <p className="text-xl font-bold mt-1">
-                    {correlationAnalysis.reportedValue} {correlationAnalysis.unit} reported
-                  </p>
-                </div>
-
-                <span
-                  className={`rounded-full px-3 py-1 text-[10px] font-semibold ${
-                    correlationAnalysis.inRange
-                      ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300'
-                      : 'bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-300'
-                  }`}
-                >
-                  {correlationAnalysis.inRange ? '✓ Conforms to Power Load' : '⚠️ Physical Discrepancy Flagged'}
-                </span>
-              </div>
-
-              <OverlayChart
-                history={correlationAnalysis.historySeries}
-                expectedMin={correlationAnalysis.expectedMin}
-                expectedMax={correlationAnalysis.expectedMax}
-                unit={correlationAnalysis.unit}
+            {/* Professional Correlation Summary */}
+            <div className="lg:col-span-2">
+              <CorrelationSummary
+                analysis={correlationAnalysis}
+                factory={selectedFactory}
               />
-
-              <div className="mt-4 flex flex-wrap items-center gap-5 text-[10px] text-slate-400 dark:text-slate-500 border-t border-slate-100 pt-3 dark:border-white/10">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-red-500" /> CEMS Reported Sensor Telemetry
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> Electricity Expected Range ({correlationAnalysis.expectedMin}–{correlationAnalysis.expectedMax} {correlationAnalysis.unit})
-                </span>
-              </div>
             </div>
 
             {/* Right Meta Cards */}
@@ -397,7 +518,7 @@ export default function Analytics() {
                   <Zap size={13} className="text-amber-500" /> Active Electricity Draw
                 </div>
                 <p className="mt-2 text-2xl font-bold">{correlationAnalysis.power} kW</p>
-                <p className="text-[10px] text-slate-400 mt-1">Plant Production Load</p>
+                <p className="text-[10px] text-slate-400 mt-1">Live / prototype corrected production load</p>
               </div>
 
               {/* AI Auditor Explanation */}
@@ -418,6 +539,44 @@ export default function Analytics() {
               </button>
             </div>
           </div>
+
+          {/* Factory comparison analytics */}
+          <div className="mt-5">
+            <FactoryAnalyticsBars factories={factories} />
+          </div>
+
+          {/* Executive KPI summary */}
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              ['Factories Analysed', factories.length, 'Connected facilities', Gauge],
+              ['Avg. Trust Score',
+                factories.length
+                  ? Math.round(factories.reduce((s, f) => s + (Number(f.trustScore) || 0), 0) / factories.length)
+                  : 0,
+                'Across monitored plants', ShieldCheck],
+              ['Total Power Load',
+                Math.round(factories.reduce((s, f) => s + (Number(f.rawReading?.electricityConsumption) || 0), 0)),
+                'Combined kW', Zap],
+              ['Verified Plants',
+                factories.filter(f => f.verdict === 'VERIFIED').length,
+                'Current audit status', TrendingDown],
+            ].map(([label, value, detail, Icon]) => (
+              <div key={label}
+                className="rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-[#0B241D]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+                    <p className="mt-2 text-2xl font-bold">{value}</p>
+                    <p className="mt-1 text-[9px] text-slate-400">{detail}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300">
+                    <Icon size={18} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </main>
       </div>
     </div>

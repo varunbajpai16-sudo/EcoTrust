@@ -314,8 +314,26 @@ export default function Dashboard() {
               index % DEMO_MEERUT_FACTORY_LOCATIONS.length
             ];
 
+          // Prototype demo statuses:
+          // Factory #2 -> SUSPICIOUS, Factory #4 -> TAMPERED.
+          // Other factories retain their backend verdict/trust score.
+          let demoVerdict = factory.verdict;
+          let demoTrustScore = factory.trustScore;
+
+          if (index === 1) {
+            demoVerdict = 'SUSPICIOUS';
+            demoTrustScore = 72;
+          }
+
+          if (index === 3) {
+            demoVerdict = 'TAMPERED';
+            demoTrustScore = 38;
+          }
+
           return {
             ...factory,
+            verdict: demoVerdict,
+            trustScore: demoTrustScore,
             latitude: demoLocation.latitude,
             longitude: demoLocation.longitude,
             location: {
@@ -331,7 +349,49 @@ export default function Dashboard() {
         console.log("Factories Data with locations:", factoriesWithLocation);
       }
 
-      if (alerts) setAlertsData(alerts);
+      if (alerts) {
+        // Demo alerts for prototype presentation.
+        // These are intentionally added on top of live backend alerts.
+        const demoAlerts = [
+          {
+            _id: "demo-alert-1",
+            title: "Suspicious Emission Pattern",
+            description: "PM2.5 values remained unnaturally constant for 45 minutes.",
+            severity: "MEDIUM",
+            factoryName: "Meerut Cement Works",
+            factoryId: "F-102",
+            createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+            aiExplanation:
+              "AI detected statistically improbable flat-line sensor behaviour.",
+          },
+          {
+            _id: "demo-alert-2",
+            title: "Tampered Sensor Detected",
+            description:
+              "Stack flow reading does not match the power consumption profile.",
+            severity: "CRITICAL",
+            factoryName: "Shakti Paper Mill",
+            factoryId: "F-205",
+            createdAt: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
+            aiExplanation:
+              "Possible bypass or manipulated telemetry. Physical inspection recommended.",
+          },
+          {
+            _id: "demo-alert-3",
+            title: "GPS Location Mismatch",
+            description:
+              "CEMS device reported a location 3.2 km away from the registered stack.",
+            severity: "HIGH",
+            factoryName: "Green Steel Industries",
+            factoryId: "F-318",
+            createdAt: new Date(Date.now() - 32 * 60 * 1000).toISOString(),
+            aiExplanation:
+              "Device movement suggests potential relocation or unauthorized replacement.",
+          },
+        ];
+
+        setAlertsData([...demoAlerts, ...alerts]);
+      }
       setLastRefreshed(new Date());
     } catch (error) {
       console.error('Failed to fetch live EcoTrust data:', error);

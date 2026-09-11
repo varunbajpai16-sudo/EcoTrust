@@ -283,7 +283,58 @@ export default function Alerts() {
     try {
       setLoading(true);
       const data = await getActiveAlerts();
-      setAlertsList(data || []);
+
+      // Prototype demo alerts: keep these visible even when the API has no alerts.
+      const demoAlerts = [
+        {
+          _id: 'demo-alert-suspicious-001',
+          title: 'Suspicious Emission Pattern',
+          severity: 'MEDIUM',
+          factoryName: 'Meerut Cement Works',
+          factoryId: 'F-102',
+          sensorId: 'STACK-01',
+          createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+          aiExplanation:
+            'AI detected a statistically unusual emission pattern. The telemetry requires manual verification.',
+          description: 'Unusual emission behaviour detected.',
+          flags: ['Emission Spike', 'Pattern Anomaly'],
+        },
+        {
+          _id: 'demo-alert-tampered-002',
+          title: 'Tampered Sensor Detected',
+          severity: 'CRITICAL',
+          factoryName: 'Shakti Paper Mill',
+          factoryId: 'F-205',
+          sensorId: 'STACK-03',
+          createdAt: new Date(Date.now() - 17 * 60 * 1000).toISOString(),
+          aiExplanation:
+            'Possible sensor bypass or manipulated telemetry detected. Physical inspection is recommended.',
+          description: 'Potential sensor tampering detected.',
+          flags: ['Sensor Tampering', 'Telemetry Manipulation', 'Bypass Suspected'],
+        },
+        {
+          _id: 'demo-alert-high-003',
+          title: 'GPS Location Mismatch',
+          severity: 'HIGH',
+          factoryName: 'Green Steel Industries',
+          factoryId: 'F-318',
+          sensorId: 'STACK-02',
+          createdAt: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+          aiExplanation:
+            'The reported sensor location differs from the registered factory coordinates. Verify the device installation.',
+          description: 'GPS telemetry does not match the registered location.',
+          flags: ['GPS Mismatch', 'Device Verification'],
+        },
+      ];
+
+      const apiAlerts = Array.isArray(data) ? data : [];
+      const existingIds = new Set(apiAlerts.map((alert) => alert._id));
+      const mergedAlerts = [
+        ...apiAlerts,
+        ...demoAlerts.filter((alert) => !existingIds.has(alert._id)),
+      ];
+
+      setAlertsList(mergedAlerts);
     } catch (err) {
       console.error('Failed to fetch alerts:', err);
     } finally {
@@ -303,9 +354,18 @@ export default function Alerts() {
 
   // Resolve Alert Handler
   const handleResolveAlert = async (alertId) => {
-    await resolveAlert(alertId);
+    const isDemoAlert = String(alertId).startsWith('demo-alert-');
+
+    if (!isDemoAlert) {
+      await resolveAlert(alertId);
+    }
+
     setAlertsList((prev) => prev.filter((a) => a._id !== alertId));
-    setToastMessage('Alert resolved & logged in compliance history.');
+    setToastMessage(
+      isDemoAlert
+        ? 'Demo alert resolved.'
+        : 'Alert resolved & logged in compliance history.'
+    );
     setTimeout(() => setToastMessage(''), 2500);
   };
 
@@ -519,7 +579,17 @@ export default function Alerts() {
             </div>
 
             <div className="space-y-3">
-              {filteredAlerts.length > 0 ? (
+              {loading ? (
+                <div className="rounded-2xl border border-slate-200 bg-white py-16 text-center dark:border-white/10 dark:bg-[#0B241D]">
+                  <div className="mx-auto h-9 w-9 animate-spin rounded-full border-2 border-slate-200 border-t-[#0B6B50] dark:border-white/10 dark:border-t-emerald-400" />
+                  <p className="mt-4 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    Loading alerts...
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                    Fetching the latest environmental incident data
+                  </p>
+                </div>
+              ) : filteredAlerts.length > 0 ? (
                 filteredAlerts.map((alert) => (
                   <AlertCard
                     key={alert._id}
