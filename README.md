@@ -4,12 +4,12 @@
 
 <p align="center">
   <a href="https://eco-trust-peach.vercel.app/">
-    <img src="https://img.shields.io/badge/Live%20Demo-EcoTrust-00c896?style=for-the-badge" alt="Live Demo">
+    <img src="./Public/Screenshot 2026-09-28 005110.png" alt="Live Demo">
   </a>
-  <img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React">
-  <img src="https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="./Public/Screenshot 2026-09-28 005129.png" alt="Live Demo">
+  <img src="./Public/Screenshot 2026-09-28 005204.png" alt="Node.js">
   <img src="https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB">
-  <img src="https://img.shields.io/badge/AI-LangGraph%20%7C%20LangChain-1C3C3C?style=for-the-badge" alt="AI">
+  <img src="./Public/Screenshot 2026-09-28 005218.png alt="AI">
 </p>
 
 <p align="center">
