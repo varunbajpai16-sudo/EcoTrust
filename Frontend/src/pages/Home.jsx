@@ -14,13 +14,14 @@ import {
   Wind,
   X,
   Zap,
-  ActivityIcon
+  ActivityIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
-import { toggleTheme, setTheme } from '../features/Theme/Theme_slice'; 
+import { toggleTheme, setTheme } from '../features/Theme/Theme_slice';
 import PremiumLoaderNode from '../components/EcoTrust_Loader';
+import api from '../services/api';
 
 const stats = [
   {
@@ -141,18 +142,24 @@ function MiniChart({ red = false }) {
 function MetricCard({ title, value, unit, status, danger }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-white/[0.03] dark:shadow-none">
-      <div className="text-xs font-medium text-slate-500 dark:text-white/50">{title}</div>
+      <div className="text-xs font-medium text-slate-500 dark:text-white/50">
+        {title}
+      </div>
 
       <div className="mt-2 flex items-end gap-1">
         <span className="text-[25px] font-bold tracking-tight text-[#0F172A] dark:text-white">
           {value}
         </span>
-        <span className="mb-1 text-[10px] text-slate-400 dark:text-white/30">{unit}</span>
+        <span className="mb-1 text-[10px] text-slate-400 dark:text-white/30">
+          {unit}
+        </span>
       </div>
 
       <div
         className={`mt-1 text-[11px] font-medium ${
-          danger ? 'text-red-500 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
+          danger
+            ? 'text-red-500 dark:text-red-400'
+            : 'text-emerald-600 dark:text-emerald-400'
         }`}
       >
         {status}
@@ -430,20 +437,27 @@ function DashboardPreview() {
   );
 }
 
-
-
 function Home() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
   const [mobileMenu, setMobileMenu] = useState(false);
-
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const res = await api.get('/health');
+        console.log('Health Check Response:', res);
+      } catch (error) {
+        console.error('Health check failed:', error);
+      }
+    };
+    checkHealth();
+  }, []);
   const [loading, setLoading] = useState(() => {
     return sessionStorage.getItem('ecotrust-loader-shown') !== 'true';
   });
 
   // Initialize theme from localStorage once, on first mount
-
 
   // Keep the `dark` class on <html> in sync with the redux theme state
   // (Tailwind's class-based dark mode reads this)
@@ -590,7 +604,9 @@ function Home() {
 
               <h1 className="max-w-[650px] text-4xl font-bold leading-[1.08] tracking-[-0.035em] text-[#0F172A] dark:text-white sm:text-5xl lg:text-[58px]">
                 Real-Time Environmental{' '}
-                <span className="text-[#0B6B50] dark:text-emerald-400">Monitoring & Compliance</span>{' '}
+                <span className="text-[#0B6B50] dark:text-emerald-400">
+                  Monitoring & Compliance
+                </span>{' '}
                 Made Simple
               </h1>
 
@@ -701,19 +717,19 @@ function Home() {
                   icon: Wind,
                   title: 'Live Monitoring',
                   text: 'Track CEMS, CEQMS and environmental sensor data in real time.',
-                  path:"/LiveMonitoring"
+                  path: '/LiveMonitoring',
                 },
                 {
                   icon: ShieldCheck,
                   title: 'Compliance Intelligence',
                   text: 'Know your compliance status instantly with automated alerts.',
-                  path:"/compliance"
+                  path: '/compliance',
                 },
                 {
                   icon: CircleAlert,
                   title: 'Smart Alerts',
                   text: 'Get notified before environmental parameters become critical.',
-                  path:"/Alerts"
+                  path: '/Alerts',
                 },
               ].map(({ icon: Icon, title, text, path }) => (
                 <div
@@ -732,7 +748,10 @@ function Home() {
                     {text}
                   </p>
 
-                  <div onClick={()=>navigate(path)} className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#0B6B50] dark:text-emerald-400 hover:cursor-pointer">
+                  <div
+                    onClick={() => navigate(path)}
+                    className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#0B6B50] dark:text-emerald-400 hover:cursor-pointer"
+                  >
                     Learn more
                     <ArrowRight size={14} />
                   </div>
